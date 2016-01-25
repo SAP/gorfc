@@ -1,0 +1,46 @@
+# Object files
+*.o
+*.ko
+*.obj
+*.elf
+
+# Libraries
+*.lib
+*.a
+
+# Shared objects (inc. Windows DLLs)
+*.dll
+*.so
+*.so.*
+*.dylib
+
+# Executables
+*.exe
+*.out
+*.app
+*.i*86
+*.x86_64
+*.hex
+
+# RFC traces
+*.trc
+
+# sapnwrfc.ini example
+gorfc/sapnwrfc.ini
+
+# Packages
+GoRFC/pkg/
+
+# Dependencies
+stretchr
+
+# others
+.DS_Store
+Thumbs.db
+*.tmp
+
+
+### JetBrains
+*.iml
+.idea
+
