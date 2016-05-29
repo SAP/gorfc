@@ -7,7 +7,7 @@ The functions of the library take and return Go data types.
 
 */
 
-package gorfc
+package saprfc
 
 /*
 
