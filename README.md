@@ -1,8 +1,12 @@
 # SAP NW RFC Connector for GO
 
-The _gorfc_ package provides bindings for SAP NW RFC Library, for a comfortable way of calling remote enabled ABAP function modules (RFMs) from GO.
+**this is only a fork, but it seems that [origin](https://github.com/SAP/gorfc) is very *static***  
 
-Current release is fully functional on Linux and experimental on Windows, see the [Issue #1](https://github.com/SAP/gorfc/issues/1).
+**all credit for this code goes to [@bsrdjan](https://github.com/bsrdjan)**  
+
+The **saprfc** package provides bindings for **SAP NW RFC Library**, for an easy way of interacting with SAP systems
+
+The goal of this fork is the best possible compatibility with Linux, if you want work with Windows use the [original package](https://github.com/SAP/gorfc) 
 
 ## Table of contents
 
@@ -15,7 +19,7 @@ Current release is fully functional on Linux and experimental on Windows, see th
 * [To Do](#todo)
 * [References](#references)
 
-## <a name="platforms"></a> Platforms and Prerequisites
+## Platforms and Prerequisites
 
 The SAP NW RFC Library is a prerequsite for using the GO RFC connector and must be installed on a same system. It is available on platforms supported by GO, except OSX.
 
@@ -23,7 +27,7 @@ A prerequisite to download _SAP NW RFC Library_ is having a **customer or partne
 
 _SAP NW RFC Library_ is fully backwards compatible, supporting all NetWeaver systems, from today, down to release R/3 4.0. You can always use the newest version released on Service Marketplace and connect to older systems as well.
 
-## <a name="install"></a>Install
+## Install
 
 To start using SAP NW RFC Connector for GO, you shall:
 
@@ -31,7 +35,7 @@ To start using SAP NW RFC Connector for GO, you shall:
 2. Install SAP NW RFC Library for your platform
 3. Install GORFC package
 
-### <a name="install-go"></a>Install and Configure GO
+### Install and Configure GO
 
 If you are new to GO, the GO distribution shall be installed first, following [GO Installation](#ref1) and [GO Configuration](#ref2) instructions. See also [GO Environment Variables](#ref3).
 
@@ -60,11 +64,11 @@ See also [GO on Windows Example](#ref4).
 
 The work environment setup works the same way like on Windows and [these instructions](https://github.com/golang/go/wiki/Ubuntu) describe the installation on Ubuntu Linux for example.
 
-### <a name="install-rfcsdk"></a>Install SAP NW RFC Library
+### Install SAP NW RFC Library
 
 To obtain and install _SAP NW RFC Library_ from _SAP Service Marketplace_, you can follow [the same instructions as for Python or nodejs RFC connectors](http://sap.github.io/PyRFC/install.html#install-c-connector).
 
-### <a name="install-gorfc"></a>Install GORFC
+### Install GORFC
 
 To install _gorfc_ and dependencies, run following commands:
 
@@ -85,7 +89,7 @@ cd $GOPATH/src/github.com/sap/gorfc/example
 go run hello_gorfc.go
 ```
 
-## <a name="getting-started"></a>Getting Started
+## Getting Started
 
 See the _hello_gorfc.go_ example and _gorfc_test.go_ unit tests.
 
@@ -160,15 +164,15 @@ func main() {
     c.Close()
 ```
 
-## <a name="todo"></a>To Do
+## To Do
 
 * Improve the documentation
 * Fix Windows compiler flags
 
-## <a name="references"></a>References
+## References
 
-* <a name="ref1">[GO Installation](https://golang.org/doc/install)
-* <a name="ref2">[GO Configuration](https://golang.org/doc/code.html)
-* <a name="ref3">[GO Environment Variables](https://golang.org/cmd/go/#hdr-Environment_variables)
-* <a name="ref4">[GO on Windows Example](http://www.wadewegner.com/2014/12/easy-go-programming-setup-for-windows/)
-* <a name="ref5">[Another GO on Windows Example](https://github.com/abourget/getting-started-with-golang/blob/master/Getting_Started_for_Windows.md)
+* [GO Installation](https://golang.org/doc/install)
+* [GO Configuration](https://golang.org/doc/code.html)
+* [GO Environment Variables](https://golang.org/cmd/go/#hdr-Environment_variables)
+* [GO on Windows Example](http://www.wadewegner.com/2014/12/easy-go-programming-setup-for-windows/)
+* [Another GO on Windows Example](https://github.com/abourget/getting-started-with-golang/blob/master/Getting_Started_for_Windows.md)
