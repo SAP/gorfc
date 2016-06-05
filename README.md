@@ -12,9 +12,6 @@ The goal of this fork is the best possible compatibility with Linux, if you want
 
 * [Platforms and Prerequisites](#platforms)
 * [Install](#install)
-	* [GO](#install-go)
-	* [SAP NW RFC Library](#install-rfcsdk)
-	* [gorfc](#install-gorfc)
 * [Getting Started](#getting-started)
 * [To Do](#todo)
 * [References](#references)
@@ -31,67 +28,31 @@ _SAP NW RFC Library_ is fully backwards compatible, supporting all NetWeaver sys
 
 To start using SAP NW RFC Connector for GO, you shall:
 
-1. Install and Configure GO
+1. [Install and Configure Golang](https://golang.org/doc/install)
 2. Install SAP NW RFC Library for your platform
-3. Install GORFC package
-
-### Install and Configure GO
-
-If you are new to GO, the GO distribution shall be installed first, following [GO Installation](#ref1) and [GO Configuration](#ref2) instructions. See also [GO Environment Variables](#ref3).
-
-#### Windows Config Example
-
-After running the [MSI installer](https://golang.org/dl/), the default C:\Go folder is created and the _GOROOT_ system variable is set to C:\Go\.
-
-Create the GO work environment directory:
-
-```shell
-cd c:\
-mkdir workspace
-```
-
-Set the environment user varialbes GOPATH and GOBIN, add the bin subdirectories to PATH and restart the Windows shell.
-
-```shell
-GOPATH = C:\workspace
-GOBIN = %GOPATH%\bin
-PATH = %GOROOT%\bin;%GOBIN%:%PATH%
-```
-
-See also [GO on Windows Example](#ref4).
-
-#### Linux
-
-The work environment setup works the same way like on Windows and [these instructions](https://github.com/golang/go/wiki/Ubuntu) describe the installation on Ubuntu Linux for example.
+3. Install SAPRFC package
 
 ### Install SAP NW RFC Library
 
 To obtain and install _SAP NW RFC Library_ from _SAP Service Marketplace_, you can follow [the same instructions as for Python or nodejs RFC connectors](http://sap.github.io/PyRFC/install.html#install-c-connector).
+The Download is [here](https://launchpad.support.sap.com/#/softwarecenter/template/products/%20_APP=00200682500000001943&_EVENT=DISPHIER&HEADER=Y&FUNCTIONBAR=N&EVENT=TREE&NE=NAVIGATE&ENR=01200314690200010197&V=MAINT&TA=ACTUAL&PAGE=SEARCH), but the SAP page is the worst, maybe it's better to search for a torrent or ask a friend at SAP.
 
-### Install GORFC
+### Install SAPRFC
 
-To install _gorfc_ and dependencies, run following commands:
+To install _saprfc_ and dependencies, run following commands:
 
 ```bash
 export CGO_CFLAGS="-I $SAPNWRFC_HOME/include"
 export CGO_LDFLAGS="-L $SAPNWRFC_HOME/lib"
-go get github.com/stretchr/testify
-go get github.com/sap/gorfc
-cd $GOPATH/src/github.com/sap/gorfc
+go get simonwaldherr.de/go/saprfc
+cd $GOPATH/src/simonwaldherr.de/go/saprfc
 go build
 go install
 ```
 
-To test the installation, run the example provided:
-
-```bash
-cd $GOPATH/src/github.com/sap/gorfc/example
-go run hello_gorfc.go
-```
-
 ## Getting Started
 
-See the _hello_gorfc.go_ example and _gorfc_test.go_ unit tests.
+See the _hello_gorfc.go_ example and _saprfc_test.go_ unit tests.
 
 The GO RFC Connector follows the same principles and the implementation model of [Python](https://github.com/SAP/PyRFC) and [nodejs](https://github.com/SAP/node-rfc) RFC connectors and you may check examples and documentation there as well.
 
@@ -100,68 +61,64 @@ package main
 
 import (
     "fmt"
-    "github.com/sap/gorfc/gorfc"
-    "github.com/stretchr/testify/assert"
-    "reflect"
-    "testing"
+    "simonwaldherr.de/go/golibs/arg"
+    saprfc "simonwaldherr.de/go/saprfc"
     "time"
 )
 
-func abapSystem() gorfc.ConnectionParameter {
-    return gorfc.ConnectionParameter{
-        Dest:      "I64",
-        Client:    "800",
-        User:      "demo",
-        Passwd:    "welcome",
-        Lang:      "EN",
-        Ashost:    "11.111.11.111",
-        Sysnr:     "00",
-        Saprouter: "/H/222.22.222.22/S/2222/W/xxxxx/H/222.22.222.222/H/",
-    }   
+var SAPconnection *saprfc.Connection
+
+func printTable(table string) {
+    params := map[string]interface{}{
+        "QUERY_TABLE": table,
+        "DELIMITER":   ";",
+        "NO_DATA":     "",
+        "ROWSKIPS":    0,
+        "ROWCOUNT":    0,
+    }
+    r, err := SAPconnection.Call("RFC_READ_TABLE", params)
+    if err != nil {
+        fmt.Println(err)
+        return
+    }
+
+    echoStruct := r["DATA"].([]interface{})
+    for _, value := range echoStruct {
+        values := value.(map[string]interface{})
+        for _, val := range values {
+            fmt.Println(val)
+        }
+    }
+    return
 }
 
 func main() {
-    c, _ := gorfc.Connection(abapSystem())
-    var t *testing.T
+    arg.String("table", "USR01", "read from table", time.Second*55)
+    arg.String("dest", "", "destination system", time.Second*55)
+    arg.String("client", "", "client", time.Second*55)
+    arg.String("user", "RFC", "username", time.Second*55)
+    arg.String("pass", "", "password", time.Second*55)
+    arg.String("lang", "DE", "language", time.Second*55)
+    arg.String("host", "127.0.0.1", "SAP server", time.Second*55)
+    arg.String("sysnr", "00", "SysNr", time.Second*5)
+    arg.String("router", "/H/127.0.0.1/H/", "SAP router", time.Second*55)
+    arg.Parse()
 
-    params := map[string]interface{}{
-        "IMPORTSTRUCT": map[string]interface{}{
-            "RFCFLOAT": 1.23456789,
-            "RFCCHAR1": "A",
-            "RFCCHAR2": "BC",
-            "RFCCHAR4": "ÄBC",
-            "RFCINT1":  0xfe,
-            "RFCINT2":  0x7ffe,
-            "RFCINT4":  999999999,
-            "RFCHEX3":  []byte{255, 254, 253},
-            "RFCTIME":  time.Now(),
-            "RFCDATE":  time.Now(),
-            "RFCDATA1": "HELLÖ SÄP",
-            "RFCDATA2": "DATA222",
-        },
-    }   
-    r, _ := c.Call("STFC_STRUCTURE", params)
+    SAPconnection, _ = saprfc.ConnectionFromParams(saprfc.ConnectionParameter{
+        Dest:      arg.Get("dest").(string),
+        Client:    arg.Get("client").(string),
+        User:      arg.Get("user").(string),
+        Passwd:    arg.Get("pass").(string),
+        Lang:      arg.Get("lang").(string),
+        Ashost:    arg.Get("host").(string),
+        Sysnr:     arg.Get("sysnr").(string),
+        Saprouter: arg.Get("router").(string),
+    })
 
-    assert.NotNil(t, r["ECHOSTRUCT"])
-    importStruct := params["IMPORTSTRUCT"].(map[string]interface{})
-    echoStruct := r["ECHOSTRUCT"].(map[string]interface{})
-    assert.Equal(t, importStruct["RFCFLOAT"], echoStruct["RFCFLOAT"])
-    assert.Equal(t, importStruct["RFCCHAR1"], echoStruct["RFCCHAR1"])
-    assert.Equal(t, importStruct["RFCCHAR2"], echoStruct["RFCCHAR2"])
-    assert.Equal(t, importStruct["RFCCHAR4"], echoStruct["RFCCHAR4"])
-    assert.Equal(t, importStruct["RFCINT1"], echoStruct["RFCINT1"])
-    assert.Equal(t, importStruct["RFCINT2"], echoStruct["RFCINT2"])
-    assert.Equal(t, importStruct["RFCINT4"], echoStruct["RFCINT4"])
-    //  assert.Equal(t, importStruct["RFCHEX3"], echoStruct["RFCHEX3"])
-    assert.Equal(t, importStruct["RFCTIME"].(time.Time).Format("150405"), echoStruct["RFCTIME"].(time.Time).Format("15.
-    assert.Equal(t, importStruct["RFCDATE"].(time.Time).Format("20060102"), e/Users/d037732/Downloads/gorfc/README.mdchoStruct["RFCDATE"].(time.Time).Format(".
-    assert.Equal(t, importStruct["RFCDATA1"], echoStruct["RFCDATA1"])
-    assert.Equal(t, importStruct["RFCDATA2"], echoStruct["RFCDATA2"])
+    printTable(arg.Get("table").(string))
 
-    fmt.Println(reflect.TypeOf(importStruct["RFCDATE"]))
-    fmt.Println(reflect.TypeOf(importStruct["RFCTIME"]))
-
-    c.Close()
+    SAPconnection.Close()
+}
 ```
 
 ## To Do
