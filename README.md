@@ -10,11 +10,22 @@ The goal of this fork is the best possible compatibility with Linux, if you want
 
 ## Table of contents
 
-* [Platforms and Prerequisites](#platforms)
+* [ToC](#table-of-contents)
+* [Badges](#badges)
+* [Platforms and Prerequisites](#platforms-and-prerequisites)
 * [Install](#install)
 * [Getting Started](#getting-started)
-* [To Do](#todo)
+* [To Do](#to-do)
 * [References](#references)
+
+## Badges
+
+[![GoDoc](https://godoc.org/github.com/SimonWaldherr/saprfc?status.svg)](https://godoc.org/github.com/SimonWaldherr/saprfc)
+[![Go Report Card](https://goreportcard.com/badge/github.com/SimonWaldherr/saprfc)](https://goreportcard.com/report/github.com/SimonWaldherr/saprfc)
+[![codebeat badge](https://codebeat.co/badges/7bdd3011-cae5-408b-aa71-8b2b779f6cd8)](https://codebeat.co/projects/github-com-simonwaldherr-saprfc)
+[![license](https://img.shields.io/badge/license-Apache-blue.svg)](https://raw.githubusercontent.com/SimonWaldherr/saprfc/master/LICENSE)
+
+*automatic CI Tests are not possible since the SAP library **SAP NW RFC** is not open source*
 
 ## Platforms and Prerequisites
 
