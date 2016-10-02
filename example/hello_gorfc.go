@@ -6,12 +6,12 @@ import (
 	"testing"
 	"time"
 
-	"github.com/sap/gorfc/gorfc"
 	"github.com/stretchr/testify/assert"
+	saprfc "simonwaldherr.de/go/saprfc"
 )
 
-func abapSystem() gorfc.ConnectionParameter {
-	return gorfc.ConnectionParameter{
+func abapSystem() saprfc.ConnectionParameter {
+	return saprfc.ConnectionParameter{
 		Dest:      "I64",
 		Client:    "800",
 		User:      "demo",
@@ -24,7 +24,7 @@ func abapSystem() gorfc.ConnectionParameter {
 }
 
 func main() {
-	c, _ := gorfc.ConnectionFromParams(abapSystem())
+	c, _ := saprfc.ConnectionFromParams(abapSystem())
 	var t *testing.T
 
 	params := map[string]interface{}{

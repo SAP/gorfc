@@ -7,7 +7,7 @@ The functions of the library take and return Go data types.
 
 */
 
-package gorfc
+package saprfc
 
 /*
 
@@ -16,7 +16,6 @@ package gorfc
 #cgo linux CFLAGS: -O2 -minline-all-stringops -g -fno-strict-aliasing -fno-omit-frame-pointer
 #cgo linux CFLAGS: -m64 -fexceptions -funsigned-char -Wall -Wno-uninitialized -Wno-long-long
 #cgo linux CFLAGS: -Wcast-align -pthread -pipe
-#cgo linux CFLAGS: -Wunused-variable
 
 #cgo linux CFLAGS: -I/usr/local/sap/nwrfcsdk/include
 #cgo linux LDFLAGS: -L/usr/local/sap/nwrfcsdk/lib -lsapnwrfc -lsapucum
@@ -278,7 +277,7 @@ func nWrapString(uc *C.SAP_UC, length C.int, strip bool) (result string, err err
 	}
 	utf8Size := C.uint(length*3) + 1
 	utf8str := (*C.char)(unsafe.Pointer(C.malloc((C.size_t)(utf8Size))))
-	//defer C.free(unsafe.Pointer(utf8str)) // _todo: Memory access error on Windows only, when trying to free RFCCHAR1 of RFCTABLE in function call test
+	defer C.free(unsafe.Pointer(utf8str)) // _todo: Memory access error on Windows only, when trying to free RFCCHAR1 of RFCTABLE in function call test
 
 	*utf8str = 0
 	resultLen := C.uint(0)
@@ -414,7 +413,7 @@ func wrapTypeDescription(typeDesc C.RFC_TYPE_DESC_HANDLE) (goTypeDesc TypeDescri
 	var nucLength, ucLength C.uint
 	var i, fieldCount C.uint
 
-	typeName := (*C.SAP_UC)(C.malloc((C.size_t)(30 + 1)))
+	typeName := (*C.SAP_UC)(C.malloc((C.size_t)(40 + 1)))
 	*typeName = 0
 	defer C.free(unsafe.Pointer(typeName))
 
@@ -853,7 +852,7 @@ func GetNWRFCLibVersion() (major, minor, patchlevel uint) {
 //# CONNECTION                                                                   #
 //################################################################################
 
-// ConnectionParameterholds all the connection parameters possible (at the moment).
+// ConnectionParameter holds all the connection parameters possible (at the moment).
 type ConnectionParameter struct {
 	Dest            string
 	Client          string
@@ -895,7 +894,7 @@ func connectionFinalizer(conn *Connection) {
 	}
 }
 
-// Connection creates a new connection with the given connection parameters and tries to open it. If this is successfull Connection returns the connection else it returns nil.
+// ConnectionFromParams creates a new connection with the given connection parameters and tries to open it. If this is successfull it returns the connection else it returns nil.
 func ConnectionFromParams(connParams ConnectionParameter) (conn *Connection, err error) {
 	conn = new(Connection)
 	runtime.SetFinalizer(conn, connectionFinalizer)
@@ -920,18 +919,19 @@ func ConnectionFromParams(connParams ConnectionParameter) (conn *Connection, err
 	return
 }
 
-// ConnectionFromIni creates a new connection with just the dest system id.
+// ConnectionFromDest creates a new connection with just the dest system id.
 func ConnectionFromDest(dest string) (conn *Connection, err error) {
 	return ConnectionFromParams(ConnectionParameter{Dest: dest})
 }
 
 // RStrip sets rstrip of the given connection to the passed parameter and returns the connection
+// right strips strings returned from RFC call (default is true)
 func (conn *Connection) RStrip(rstrip bool) *Connection {
 	conn.rstrip = rstrip
 	return conn
 }
 
-// RerturnImportparams sets returnImportParams of the given connection to the passed parameter and returns the connection
+// ReturnImportParams sets returnImportParams of the given connection to the passed parameter and returns the connection
 func (conn *Connection) ReturnImportParams(returnImportParams bool) *Connection {
 	conn.returnImportParams = returnImportParams
 	return conn
@@ -992,6 +992,19 @@ func (conn *Connection) Ping() (err error) {
 		return rfcError(errorInfo, "Server could not be pinged")
 	}
 	return
+}
+
+// PingAndAutoReconnect tries to reconnect on an error, it checks by the duration defined by the interval param
+func (conn *Connection) PingAndAutoReconnect(interval time.Duration) *time.Ticker {
+	ticker := time.NewTicker(interval)
+	go func() {
+		for range ticker.C {
+			if conn.Ping != nil {
+				conn.Reopen()
+			}
+		}
+	}()
+	return ticker
 }
 
 // GetConnectionAttributes returns the wrapped connection attributes of the connection.

@@ -1,4 +1,4 @@
-package gorfc
+package saprfc
 
 import (
 	"fmt"
