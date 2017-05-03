@@ -73,7 +73,7 @@ export CGO_CFLAGS="-I $SAPNWRFC_HOME/include"
 export CGO_LDFLAGS="-L $SAPNWRFC_HOME/lib"
 go get github.com/stretchr/testify
 go get github.com/sap/gorfc
-cd $GOPATH/src/github.com/sap/gorfc
+cd $GOPATH/src/github.com/sap/gorfc/gorfc
 go build
 go install
 ```
