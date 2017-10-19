@@ -15,8 +15,7 @@ package gorfc
 #cgo linux CFLAGS: -DSAPwithUNICODE -D__NO_MATH_INLINES -DSAPwithTHREADS -DSAPonLIN
 #cgo linux CFLAGS: -O2 -minline-all-stringops -g -fno-strict-aliasing -fno-omit-frame-pointer
 #cgo linux CFLAGS: -m64 -fexceptions -funsigned-char -Wall -Wno-uninitialized -Wno-long-long
-#cgo linux CFLAGS: -Wcast-align -pthread -pipe
-#cgo linux CFLAGS: -Wunused-variable
+#cgo linux CFLAGS: -Wcast-align -pthread -pipe -Wno-unused-variable
 
 #cgo linux CFLAGS: -I/usr/local/sap/nwrfcsdk/include
 #cgo linux LDFLAGS: -L/usr/local/sap/nwrfcsdk/lib -lsapnwrfc -lsapucum
@@ -278,7 +277,7 @@ func nWrapString(uc *C.SAP_UC, length C.int, strip bool) (result string, err err
 	}
 	utf8Size := C.uint(length*3) + 1
 	utf8str := (*C.char)(unsafe.Pointer(C.malloc((C.size_t)(utf8Size))))
-	//defer C.free(unsafe.Pointer(utf8str)) // _todo: Memory access error on Windows only, when trying to free RFCCHAR1 of RFCTABLE in function call test
+	defer C.free(unsafe.Pointer(utf8str)) // _todo: Memory access error on Windows only, when trying to free RFCCHAR1 of RFCTABLE in function call test
 
 	*utf8str = 0
 	resultLen := C.uint(0)
@@ -414,7 +413,7 @@ func wrapTypeDescription(typeDesc C.RFC_TYPE_DESC_HANDLE) (goTypeDesc TypeDescri
 	var nucLength, ucLength C.uint
 	var i, fieldCount C.uint
 
-	typeName := (*C.SAP_UC)(C.malloc((C.size_t)(30 + 1)))
+	typeName := (*C.SAP_UC)(C.malloc((C.size_t)(40 + 1)))
 	*typeName = 0
 	defer C.free(unsafe.Pointer(typeName))
 
@@ -682,7 +681,7 @@ func wrapVariable(cType C.RFCTYPE, container C.RFC_FUNCTION_HANDLE, cName *C.SAP
 		rc = C.RfcGetString(container, cName, stringValue, strLen+1, &resultLen, &errorInfo)
 		/*if rc == 23: # Buffer too small, use returned requried result length
 		  print("Warning: Buffer for BCD (cLen={}, buffer={}) too small: "
-		        "trying with {}".format(cLen, strLen, resultLen))
+				"trying with {}".format(cLen, strLen, resultLen))
 		  free(stringValue)
 		  strLen = resultLen
 		  stringValue = mallocU(strLen+1)
