@@ -1,45 +1,45 @@
-# SAP NW RFC Connector for GO
+# SAP NW RFC Connector for [Go](https://golang.org)
 
-The _gorfc_ package provides bindings for SAP NW RFC Library, for a comfortable way of calling remote enabled ABAP function modules (RFMs) from GO.
+The *gorfc* package provides bindings for *SAP NW RFC Library*, for a comfortable way of calling remote enabled ABAP function modules (RFMs) from [Go](https://golang.org).
 
-Current release is fully functional on Linux and experimental on Windows, see the [Issue #1](https://github.com/SAP/gorfc/issues/1).
+The current release is fully functional on Linux and experimental on Windows, see the [Issue #1](https://github.com/SAP/gorfc/issues/1).
 
 ## Table of contents
 
-* [Platforms and Prerequisites](#platforms)
+* [Platforms and Prerequisites](#platforms-and-prerequisites)
 * [Install](#install)
-	* [GO](#install-go)
-	* [SAP NW RFC Library](#install-rfcsdk)
+	* [GO](#install-and-configure-go)
+	* [SAP NW RFC Library](#install-sap-nw-rfc-library)
 	* [gorfc](#install-gorfc)
 * [Getting Started](#getting-started)
-* [To Do](#todo)
+* [To Do](#to-do)
 * [References](#references)
 
-## <a name="platforms"></a> Platforms and Prerequisites
+## Platforms and Prerequisites
 
-The SAP NW RFC Library is a prerequsite for using the GO RFC connector and must be installed on a same system. It is available on platforms supported by GO, except OSX.
+The SAP NW RFC Library is a prerequisite for using the Go RFC connector and must be installed on the same system. It is available on many platforms supported by Go, except macOS, Plan 9 and BSD.
 
-A prerequisite to download _SAP NW RFC Library_ is having a **customer or partner account** on _SAP Service Marketplace_ . If you are SAP employee please check SAP OSS note [1037575 - Software download authorizations for SAP employees](http://service.sap.com/sap/support/notes/1037575).
+A prerequisite to download *SAP NW RFC Library* is having a **customer or partner account** on *SAP Service Marketplace* . If you are SAP employee please check SAP OSS note [1037575 - Software download authorizations for SAP employees](http://service.sap.com/sap/support/notes/1037575).
 
-_SAP NW RFC Library_ is fully backwards compatible, supporting all NetWeaver systems, from today, down to release R/3 4.0. You can always use the newest version released on Service Marketplace and connect to older systems as well.
+The _SAP NW RFC Library_ is fully backwards compatible, supporting all NetWeaver systems, from today, down to release R/3 4.0. You can and should always use the newest version released on Service Marketplace and connect to older systems as well.
 
-## <a name="install"></a>Install
+## Install
 
-To start using SAP NW RFC Connector for GO, you shall:
+To start using SAP NW RFC Connector for Go, you shall:
 
-1. Install and Configure GO
-2. Install SAP NW RFC Library for your platform
-3. Install GORFC package
+1. [Install and Configure Go](#install-and-configure-go)
+2. [Install the SAP NW RFC Library for your platform](#install-sap-nw-rfc-library)
+3. [Install the GORFC package](#install-gorfc)
 
-### <a name="install-go"></a>Install and Configure GO
+### Install and Configure Go
 
-If you are new to GO, the GO distribution shall be installed first, following [GO Installation](#ref1) and [GO Configuration](#ref2) instructions. See also [GO Environment Variables](#ref3).
+If you are new to Go, the Go distribution shall be installed first, following [GO Installation](#ref1) and [GO Configuration](#ref2) instructions. See also [GO Environment Variables](#ref3).
 
 #### Windows Config Example
 
 After running the [MSI installer](https://golang.org/dl/), the default C:\Go folder is created and the _GOROOT_ system variable is set to C:\Go\.
 
-Create the GO work environment directory:
+Create the Go work environment directory:
 
 ```shell
 cd c:\
@@ -60,11 +60,11 @@ See also [GO on Windows Example](#ref4).
 
 The work environment setup works the same way like on Windows and [these instructions](https://github.com/golang/go/wiki/Ubuntu) describe the installation on Ubuntu Linux for example.
 
-### <a name="install-rfcsdk"></a>Install SAP NW RFC Library
+### Install SAP NW RFC Library
 
 To obtain and install _SAP NW RFC Library_ from _SAP Service Marketplace_, you can follow [the same instructions as for Python or nodejs RFC connectors](http://sap.github.io/PyRFC/install.html#install-c-connector).
 
-### <a name="install-gorfc"></a>Install GORFC
+### Install GORFC
 
 To install _gorfc_ and dependencies, run following commands:
 
@@ -85,7 +85,7 @@ cd $GOPATH/src/github.com/sap/gorfc/example
 go run hello_gorfc.go
 ```
 
-## <a name="getting-started"></a>Getting Started
+## Getting Started
 
 See the _hello_gorfc.go_ example and _gorfc_test.go_ unit tests.
 
@@ -160,15 +160,15 @@ func main() {
     c.Close()
 ```
 
-## <a name="todo"></a>To Do
+## To Do
 
 * Improve the documentation
 * Fix Windows compiler flags
 
-## <a name="references"></a>References
+## References
 
-* <a name="ref1">[GO Installation](https://golang.org/doc/install)
-* <a name="ref2">[GO Configuration](https://golang.org/doc/code.html)
-* <a name="ref3">[GO Environment Variables](https://golang.org/cmd/go/#hdr-Environment_variables)
-* <a name="ref4">[GO on Windows Example](http://www.wadewegner.com/2014/12/easy-go-programming-setup-for-windows/)
-* <a name="ref5">[Another GO on Windows Example](https://github.com/abourget/getting-started-with-golang/blob/master/Getting_Started_for_Windows.md)
+* <a name="ref1"></a>[GO Installation](https://golang.org/doc/install)
+* <a name="ref2"></a>[GO Configuration](https://golang.org/doc/code.html)
+* <a name="ref3"></a>[GO Environment Variables](https://golang.org/cmd/go/#hdr-Environment_variables)
+* <a name="ref4"></a>[GO on Windows Example](http://www.wadewegner.com/2014/12/easy-go-programming-setup-for-windows/)
+* <a name="ref5"></a>[Another GO on Windows Example](https://github.com/abourget/getting-started-with-golang/blob/master/Getting_Started_for_Windows.md)
