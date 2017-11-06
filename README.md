@@ -1,5 +1,9 @@
 # SAP NW RFC Connector for [Go](https://golang.org)
 
+[![GoDoc](https://img.shields.io/badge/godoc-reference-blue.svg?style=flat)](https://godoc.org/github.com/SAP/gorfc/gorfc) 
+[![Go Report Card](https://goreportcard.com/badge/github.com/SAP/gorfc)](https://goreportcard.com/report/github.com/SAP/gorfc) 
+[![license](https://img.shields.io/badge/license-Apache-blue.svg)](https://github.com/SAP/gorfc/blob/master/LICENSE)  
+
 The *gorfc* package provides bindings for *SAP NW RFC Library*, for a comfortable way of calling remote enabled ABAP function modules (RFMs) from [Go](https://golang.org).
 
 The current release is fully functional on Linux and experimental on Windows, see the [Issue #1](https://github.com/SAP/gorfc/issues/1).
