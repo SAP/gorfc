@@ -20,16 +20,12 @@ package gorfc
 
 #cgo windows CFLAGS: -DNDEBUG -D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64 -DSAPonWIN
 #cgo windows CFLAGS: -DSAPwithUNICODE -D__NO_MATH_INLINES -DSAPwithTHREADS
-#cgo windows CFLAGS: -O2 -minline-all-stringops -g -fno-strict-aliasing -fno-omit-frame-pointer
-#cgo windows CFLAGS: -m64 -fexceptions -funsigned-char -Wall -Wno-uninitialized -Wno-long-long
-#cgo windows CFLAGS: -Wcast-align -pipe -Wunused-variable
+#cgo windows CFLAGS: -O2 -g -pipe
 
-#cgo windows CFLAGS: -IC:/nwrfcsdk/include/
-#cgo windows LDFLAGS: -LC:/nwrfcsdk/lib/ -lsapnwrfc -llibsapucum
+#cgo windows CFLAGS: -I/usr/local/sap/nwrfcsdk/include
 
-#cgo windows LDFLAGS: -O2 -minline-all-stringops -g -fno-strict-aliasing -fno-omit-frame-pointer
-#cgo windows LDFLAGS: -m64 -fexceptions -funsigned-char -Wall -Wno-uninitialized -Wno-long-long
-#cgo windows LDFLAGS: -Wcast-align
+#cgo windows LDFLAGS: -L/usr/local/sap/nwrfcsdk/libwin -lsapnwrfc -llibsapucum
+#cgo windows LDFLAGS: -O2 -g
 
 #include <sapnwrfc.h>
 
