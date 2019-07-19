@@ -28,6 +28,9 @@
 # sapnwrfc.ini example
 gorfc/sapnwrfc.ini
 
+# VSCode
+.vscode
+
 # Packages
 GoRFC/pkg/
 
