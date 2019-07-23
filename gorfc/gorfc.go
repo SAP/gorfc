@@ -863,7 +863,7 @@ type ConnectionParameter struct {
 	Sysnr           string
 	Mshost          string
 	Msserv          string
-	sysID           string
+	SysID           string
 	Group           string
 	Snc_qop         string
 	Snc_myname      string
