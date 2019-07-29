@@ -201,6 +201,18 @@ func fillStructure(typeDesc C.RFC_TYPE_DESC_HANDLE, container C.RFC_STRUCTURE_HA
 						return err
 					}
 				}
+			} else if keys[0].Kind() == reflect.Interface {
+				for _, nameValue := range keys {
+					fieldName, ok := nameValue.Interface().(string)
+					if !ok {
+						return rfcError(errorInfo, "Could not fill structure passed as map with non-string keys")
+					}
+					fieldValue := s.MapIndex(nameValue).Interface()
+
+					if err := fillStructureField(typeDesc, container, fieldName, fieldValue); err != nil {
+						return err
+					}
+				}
 			} else {
 				return rfcError(errorInfo, "Could not fill structure passed as map with non-string keys")
 			}
