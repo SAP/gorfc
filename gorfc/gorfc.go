@@ -35,6 +35,42 @@ package gorfc
 
 #include <sapnwrfc.h>
 
+// TODO(davegalos): replace this with libffcall (git://git.savannah.gnu.org/libffcall.git)
+#define REP0(X)
+#define REP1(X) X(1)
+#define REP2(X) REP1(X) X(2)
+#define REP3(X) REP2(X) X(3)
+#define REP4(X) REP3(X) X(4)
+#define REP5(X) REP4(X) X(5)
+#define REP6(X) REP5(X) X(6)
+#define REP7(X) REP6(X) X(7)
+#define REP8(X) REP7(X) X(8)
+#define REP9(X) REP8(X) X(9)
+#define REP10(X) REP9(X) X(10)
+#define REP11(X) REP10(X) X(11)
+#define REP12(X) REP11(X) X(12)
+#define REP13(X) REP12(X) X(13)
+#define REP14(X) REP13(X) X(14)
+#define REP15(X) REP14(X) X(15)
+
+#define REP(N, X) \
+  REP##N(X)
+
+#define GORFC_MAX_CALLBACK_REGISTRATIONS 15
+
+extern RFC_RC wrapNwrfcCallback(RFC_CONNECTION_HANDLE conn, RFC_FUNCTION_HANDLE func, RFC_ERROR_INFO* error, int idx);
+
+#define RFCCALLBACK(n) RFC_RC gorfc_callback_##n(RFC_CONNECTION_HANDLE conn, RFC_FUNCTION_HANDLE func, RFC_ERROR_INFO* error) { \
+	return wrapNwrfcCallback(conn, func, error, n); }
+
+#define RFCCALLBACK_ELEM(n) (gorfc_callback_##n),
+
+REP(15, RFCCALLBACK)
+
+RFC_SERVER_FUNCTION nwrfc_callback_slots[] = {
+	REP(15, RFCCALLBACK_ELEM)
+};
+
 static SAP_UC* GoMallocU(unsigned size) {
 	return mallocU(size);
 }
@@ -51,6 +87,7 @@ static int GoStrlenU(SAP_UTF16 *str) {
 import "C"
 
 import (
+	"errors"
 	"fmt"
 	"reflect"
 	"runtime"
@@ -281,7 +318,7 @@ func nWrapString(uc *C.SAP_UC, length C.int, strip bool) (result string, err err
 	if rc != C.RFC_OK {
 		return result, rfcError(errorInfo, "Failed wrapping a C string")
 	}
-	result = C.GoStringN(utf8str, length)
+	result = C.GoStringN(utf8str, C.int(resultLen))
 	if strip {
 		result = strings.Trim(result, "\x00 ")
 		return
@@ -494,6 +531,7 @@ func (paramDesc ParameterDescription) String() string {
 type FunctionDescription struct {
 	Name       string
 	Parameters []ParameterDescription
+	orig       C.RFC_FUNCTION_DESC_HANDLE
 }
 
 func (funcDesc FunctionDescription) String() (result string) {
@@ -504,12 +542,76 @@ func (funcDesc FunctionDescription) String() (result string) {
 	return
 }
 
+func fillFunctionDescription(funcDesc FunctionDescription) (C.RFC_FUNCTION_DESC_HANDLE, error) {
+	var errorInfo C.RFC_ERROR_INFO
+	if funcDesc.orig != nil {
+		return funcDesc.orig, nil
+	}
+
+	name, err := fillString(funcDesc.Name)
+	if err != nil {
+		return nil, err
+	}
+	sapFuncDesc := C.RfcCreateFunctionDesc(name, &errorInfo)
+	if sapFuncDesc == nil {
+		return nil, rfcError(errorInfo, "Unable to create function description container")
+	}
+	typeTab := map[string]C.RFCTYPE{}
+	dirTab := map[string]C.RFC_DIRECTION{}
+
+	for i := C.RFCTYPE(0); i < C._RFCTYPE_max_value; i++ {
+		paramType, err := wrapString((*C.SAP_UC)(C.RfcGetTypeAsString(i)), false)
+		if err != nil {
+			return nil, err
+		}
+		typeTab[paramType] = i
+	}
+	allDirs := []C.RFC_DIRECTION{C.RFC_IMPORT, C.RFC_EXPORT, C.RFC_CHANGING, C.RFC_TABLES}
+	for _, dir := range allDirs {
+		dirType, err := wrapString((*C.SAP_UC)(C.RfcGetDirectionAsString(dir)), false)
+		if err != nil {
+			return nil, err
+		}
+		dirTab[dirType] = dir
+	}
+
+	for _, param := range funcDesc.Parameters {
+		var cParam *C.RFC_PARAMETER_DESC
+		cParam = (*C.RFC_PARAMETER_DESC)(C.calloc(1, C.sizeof_RFC_PARAMETER_DESC))
+		name, err = fillString(param.Name)
+		C.strcpyU(&cParam.name[0], name)
+		cParam.direction = dirTab[param.Direction]
+		cParam._type = typeTab[param.ParameterType]
+		cParam.ucLength = C.unsigned(param.UcLength)
+		cParam.nucLength = C.unsigned(param.NucLength)
+		cParam.decimals = C.unsigned(param.Decimals)
+		cParam.optional = 0
+		if param.Optional {
+			cParam.optional = 1
+		}
+		text, _ := fillString(param.ParameterText)
+		C.strcpyU(&cParam.parameterText[0], text)
+		defaultValue, _ := fillString(param.DefaultValue)
+		C.strcpyU(&cParam.defaultValue[0], defaultValue)
+		// TODO(davegalos): implement fillTypeDescription
+		cParam.typeDescHandle = nil // fillTypeDescription(param.TypeDesc)
+
+		rc := C.RfcAddParameter(sapFuncDesc, cParam, &errorInfo)
+		if rc != C.RFC_OK {
+			return nil, rfcError(errorInfo, fmt.Sprintf("Adding paramater %s failed", param.String()))
+		}
+	}
+	return sapFuncDesc, nil
+}
+
 func wrapFunctionDescription(funcDesc C.RFC_FUNCTION_DESC_HANDLE) (goFuncDesc FunctionDescription, err error) {
 	var rc C.RFC_RC
 	var errorInfo C.RFC_ERROR_INFO
 	var funcName C.RFC_ABAP_NAME
 	var i, paramCount C.uint
 	var paramDesc C.RFC_PARAMETER_DESC
+
+	goFuncDesc.orig = funcDesc
 
 	rc = C.RfcGetFunctionName(funcDesc, &funcName[0], &errorInfo)
 	if rc != C.RFC_OK {
@@ -1032,6 +1134,41 @@ func (conn *Connection) GetFunctionDescription(goFuncName string) (goFuncDesc Fu
 	return wrapFunctionDescription(funcDesc)
 }
 
+func fillParams(params interface{}, funcDesc C.RFC_FUNCTION_DESC_HANDLE, funcCont C.RFC_FUNCTION_HANDLE) error {
+	paramsValue := reflect.ValueOf(params)
+	if paramsValue.Type().Kind() == reflect.Map {
+		keys := paramsValue.MapKeys()
+		if len(keys) > 0 {
+			if keys[0].Kind() == reflect.String {
+				for _, nameValue := range keys {
+					fieldName := nameValue.String()
+					fieldValue := paramsValue.MapIndex(nameValue).Interface()
+
+					err := fillFunctionParameter(funcDesc, funcCont, fieldName, fieldValue)
+					if err != nil {
+						return err
+					}
+				}
+			} else {
+				return errors.New("Could not fill parameters passed as map with non-string keys")
+			}
+		}
+	} else if paramsValue.Type().Kind() == reflect.Struct {
+		for i := 0; i < paramsValue.NumField(); i++ {
+			fieldName := paramsValue.Type().Field(i).Name
+			fieldValue := paramsValue.Field(i).Interface()
+
+			err := fillFunctionParameter(funcDesc, funcCont, fieldName, fieldValue)
+			if err != nil {
+				return err
+			}
+		}
+	} else {
+		return errors.New("Parameters can only be passed as types map[string]interface{} or go-structures")
+	}
+	return nil
+}
+
 // Call calls the given function with the given parameters and wraps the results returned.
 func (conn *Connection) Call(goFuncName string, params interface{}) (result map[string]interface{}, err error) {
 	var errorInfo C.RFC_ERROR_INFO
@@ -1061,36 +1198,9 @@ func (conn *Connection) Call(goFuncName string, params interface{}) (result map[
 
 	defer C.RfcDestroyFunction(funcCont, nil)
 
-	paramsValue := reflect.ValueOf(params)
-	if paramsValue.Type().Kind() == reflect.Map {
-		keys := paramsValue.MapKeys()
-		if len(keys) > 0 {
-			if keys[0].Kind() == reflect.String {
-				for _, nameValue := range keys {
-					fieldName := nameValue.String()
-					fieldValue := paramsValue.MapIndex(nameValue).Interface()
-
-					err = fillFunctionParameter(funcDesc, funcCont, fieldName, fieldValue)
-					if err != nil {
-						return
-					}
-				}
-			} else {
-				return result, rfcError(errorInfo, "Could not fill parameters passed as map with non-string keys")
-			}
-		}
-	} else if paramsValue.Type().Kind() == reflect.Struct {
-		for i := 0; i < paramsValue.NumField(); i++ {
-			fieldName := paramsValue.Type().Field(i).Name
-			fieldValue := paramsValue.Field(i).Interface()
-
-			err = fillFunctionParameter(funcDesc, funcCont, fieldName, fieldValue)
-			if err != nil {
-				return
-			}
-		}
-	} else {
-		return result, rfcError(errorInfo, "Parameters can only be passed as types map[string]interface{} or go-structures")
+	err = fillParams(params, funcDesc, funcCont)
+	if err != nil {
+		return nil, err
 	}
 
 	rc := C.RfcInvoke(conn.handle, funcCont, &errorInfo)
@@ -1102,4 +1212,89 @@ func (conn *Connection) Call(goFuncName string, params interface{}) (result map[
 		return wrapResult(funcDesc, funcCont, (C.RFC_DIRECTION)(0), conn.rstrip)
 	}
 	return wrapResult(funcDesc, funcCont, C.RFC_IMPORT, conn.rstrip)
+}
+
+type ServerParameter struct {
+	Program_id string
+	Gwhost     string
+	Gwserv     string
+}
+
+type ServerConnection struct {
+	handle C.RFC_CONNECTION_HANDLE
+	params ServerParameter
+}
+
+func ServerFromParams(params ServerParameter) (*ServerConnection, error) {
+	var errorInfo C.RFC_ERROR_INFO
+	p := reflect.ValueOf(&params).Elem()
+	cParams := make([]C.RFC_CONNECTION_PARAMETER, p.NumField(), p.NumField())
+	for i := 0; i < p.NumField(); i++ {
+		name, err := fillString(p.Type().Field(i).Name)
+		if err != nil {
+			return nil, err
+		}
+		cParams[i].name = name
+		defer C.free(unsafe.Pointer(cParams[i].name))
+
+		value, err := fillString(p.Field(i).String())
+		if err != nil {
+			return nil, err
+		}
+		cParams[i].value = value
+		defer C.free(unsafe.Pointer(cParams[i].value))
+	}
+
+	conn := &ServerConnection{
+		handle: C.RfcRegisterServer(&cParams[0], C.uint(len(cParams)), &errorInfo),
+		params: params,
+	}
+	if conn.handle == nil {
+		return nil, rfcError(errorInfo, "Server could not be registered")
+	}
+	return conn, nil
+}
+
+type RFCCallback struct {
+	fn   func(ConnectionAttributes, map[string]interface{}) (interface{}, error)
+	desc C.RFC_FUNCTION_DESC_HANDLE
+}
+
+var (
+	callbacks     = [C.GORFC_MAX_CALLBACK_REGISTRATIONS]RFCCallback{}
+	callback_fill = 0
+)
+
+func InstallServerFunction(desc FunctionDescription, serve func(ConnectionAttributes, map[string]interface{}) (interface{}, error)) error {
+	var errorInfo C.RFC_ERROR_INFO
+	cDesc, err := fillFunctionDescription(desc)
+	if err != nil {
+		return err
+	}
+	if callback_fill > cap(callbacks) {
+		return fmt.Errorf("Unable to register callback, number registered exceeds %d", cap(callbacks))
+	}
+	callbacks[callback_fill] = RFCCallback{
+		fn:   serve,
+		desc: cDesc,
+	}
+	rc := C.RfcInstallServerFunction(nil, cDesc, C.nwrfc_callback_slots[callback_fill], &errorInfo)
+	if rc != C.RFC_OK {
+		return rfcError(errorInfo, "Unable to register callback")
+	}
+	callback_fill++
+	return nil
+}
+
+func (c *ServerConnection) ListenAndDispatch(timeout int) error {
+	var errorInfo C.RFC_ERROR_INFO
+	rc := C.RfcListenAndDispatch(c.handle, C.int(timeout), &errorInfo)
+	if rc != C.RFC_OK {
+		return rfcError(errorInfo, "unable to listen/dispatch")
+	}
+	return nil
+}
+
+func (c *ServerConnection) Close() {
+	C.RfcCloseConnection(c.handle, nil)
 }
