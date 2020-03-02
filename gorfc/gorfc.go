@@ -281,7 +281,7 @@ func nWrapString(uc *C.SAP_UC, length C.int, strip bool) (result string, err err
 	if rc != C.RFC_OK {
 		return result, rfcError(errorInfo, "Failed wrapping a C string")
 	}
-	result = C.GoStringN(utf8str, length)
+	result = C.GoString(utf8str)
 	if strip {
 		result = strings.Trim(result, "\x00 ")
 		return
