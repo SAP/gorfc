@@ -33,6 +33,17 @@ package gorfc
 #cgo windows LDFLAGS: -m64 -fexceptions -funsigned-char -Wall -Wno-uninitialized -Wno-long-long
 #cgo windows LDFLAGS: -Wcast-align
 
+#cgo darwin LDFLAGS: -lsapnwrfc -lsapucum
+#cgo darwin LDFLAGS: -O2 -minline-all-stringops -g -fno-strict-aliasing -fno-omit-frame-pointer
+#cgo darwin LDFLAGS: -m64 -fexceptions -funsigned-char -Wall -Wno-uninitialized -Wno-long-long
+#cgo darwin LDFLAGS: -Wcast-align -pthread
+
+#cgo darwin CFLAGS: -DNDEBUG -D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64 -DSAPonUNIX
+#cgo darwin CFLAGS: -DSAPwithUNICODE -D__NO_MATH_INLINES -DSAPwithTHREADS -DSAPonDARW
+#cgo darwin CFLAGS: -O2 -minline-all-stringops -g -fno-strict-aliasing -fno-omit-frame-pointer
+#cgo darwin CFLAGS: -m64 -fexceptions  -Wall -Wno-uninitialized -Wno-long-long
+#cgo darwin CFLAGS: -Wcast-align -pthread -pipe -Wno-unused-variable
+
 #include <sapnwrfc.h>
 
 static SAP_UC* GoMallocU(unsigned size) {
@@ -277,7 +288,7 @@ func nWrapString(uc *C.SAP_UC, length C.int, strip bool) (result string, err err
 
 	*utf8str = 0
 	resultLen := C.uint(0)
-	rc = C.RfcSAPUCToUTF8(uc, (C.uint)(length), (*C.RFC_BYTE)(utf8str), &utf8Size, &resultLen, &errorInfo)
+	rc = C.RfcSAPUCToUTF8(uc, (C.uint)(length), (*C.RFC_BYTE)(unsafe.Pointer(utf8str)), &utf8Size, &resultLen, &errorInfo)
 	if rc != C.RFC_OK {
 		return result, rfcError(errorInfo, "Failed wrapping a C string")
 	}

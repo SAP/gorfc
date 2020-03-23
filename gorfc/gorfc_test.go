@@ -28,9 +28,7 @@ func isValueInList(value string, list []string) bool {
 //
 func TestNWRFCLibVersion(t *testing.T) {
 	major, minor, patchlevel := GetNWRFCLibVersion()
-	assert.Equal(t, uint(7420), major) // adapt to your NW RFC Lib version
-	assert.Equal(t, uint(0), minor)
-	assert.Equal(t, uint(0), patchlevel)
+	assert.Equal(t, "7500.0.5", fmt.Sprintf("%d.%d.%d", major, minor, patchlevel)) // adapt to your NW RFC Lib version
 }
 
 //
