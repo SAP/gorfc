@@ -6,7 +6,7 @@
 
 The *gorfc* package provides bindings for *SAP NW RFC Library*, for a comfortable way of calling remote enabled ABAP function modules (RFMs) from [Go](https://golang.org).
 
-The current release is fully functional on Linux and experimental on Windows, see the [Issue #1](https://github.com/SAP/gorfc/issues/1).
+The current release is fully functional on Linux and experimental on Windows and macOS see the [Issue #1](https://github.com/SAP/gorfc/issues/1).
 
 ## Table of contents
 
@@ -21,7 +21,7 @@ The current release is fully functional on Linux and experimental on Windows, se
 
 ## Platforms and Prerequisites
 
-The SAP NW RFC Library is a prerequisite for using the Go RFC connector and must be installed on the same system. It is available on many platforms supported by Go, except macOS, Plan 9 and BSD.
+The SAP NW RFC Library is a prerequisite for using the Go RFC connector and must be installed on the same system. It is available on many platforms supported by Go, except Plan 9 and BSD.
 
 A prerequisite to download *SAP NW RFC Library* is having a **customer or partner account** on *SAP Service Marketplace* . If you are SAP employee please check SAP OSS note [1037575 - Software download authorizations for SAP employees](http://service.sap.com/sap/support/notes/1037575).
 
@@ -75,6 +75,8 @@ To install _gorfc_ and dependencies, run following commands:
 ```bash
 export CGO_CFLAGS="-I $SAPNWRFC_HOME/include"
 export CGO_LDFLAGS="-L $SAPNWRFC_HOME/lib"
+export CGO_CFLAGS_ALLOW=.*
+export CGO_LDFLAGS_ALLOW=.*
 go get github.com/stretchr/testify
 go get github.com/sap/gorfc
 cd $GOPATH/src/github.com/sap/gorfc/gorfc
