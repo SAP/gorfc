@@ -75,6 +75,8 @@ To install _gorfc_ and dependencies, run following commands:
 ```bash
 export CGO_CFLAGS="-I $SAPNWRFC_HOME/include"
 export CGO_LDFLAGS="-L $SAPNWRFC_HOME/lib"
+export CGO_CFLAGS_ALLOW=.*
+export CGO_LDFLAGS_ALLOW=.*
 go get github.com/stretchr/testify
 go get github.com/sap/gorfc
 cd $GOPATH/src/github.com/sap/gorfc/gorfc
