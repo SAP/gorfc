@@ -153,10 +153,10 @@ func TestWrongUserConnect(t *testing.T) {
 	}
 	assert.Nil(t, c)
 	assert.NotNil(t, err)
-	assert.Equal(t, "Connection could not be opened", err.(*RFCError).Description)
-	assert.Equal(t, "Name or password is incorrect (repeat logon)", err.(*RFCError).ErrorInfo.Message)
-	assert.Equal(t, "RFC_LOGON_FAILURE", err.(*RFCError).ErrorInfo.Code)
-	assert.Equal(t, "RFC_LOGON_FAILURE", err.(*RFCError).ErrorInfo.Key)
+	assert.Equal(t, "Connection could not be opened", err.(*RfcError).Description)
+	assert.Equal(t, "Name or password is incorrect (repeat logon)", err.(*RfcError).ErrorInfo.Message)
+	assert.Equal(t, "RFC_LOGON_FAILURE", err.(*RfcError).ErrorInfo.Code)
+	assert.Equal(t, "RFC_LOGON_FAILURE", err.(*RfcError).ErrorInfo.Key)
 }
 
 func TestMissingAshostConnect(t *testing.T) {
@@ -169,10 +169,10 @@ func TestMissingAshostConnect(t *testing.T) {
 	}
 	assert.Nil(t, c)
 	assert.NotNil(t, err)
-	assert.Equal(t, "Connection could not be opened", err.(*RFCError).Description)
-	assert.Equal(t, "Parameter ASHOST, GWHOST or MSHOST is missing.", err.(*RFCError).ErrorInfo.Message)
-	assert.Equal(t, "RFC_INVALID_PARAMETER", err.(*RFCError).ErrorInfo.Code)
-	assert.Equal(t, "RFC_INVALID_PARAMETER", err.(*RFCError).ErrorInfo.Key)
+	assert.Equal(t, "Connection could not be opened", err.(*RfcError).Description)
+	assert.Equal(t, "Parameter ASHOST, GWHOST or MSHOST is missing.", err.(*RfcError).ErrorInfo.Message)
+	assert.Equal(t, "RFC_INVALID_PARAMETER", err.(*RfcError).ErrorInfo.Code)
+	assert.Equal(t, "RFC_INVALID_PARAMETER", err.(*RfcError).ErrorInfo.Key)
 }
 
 func TestWrongParameter(t *testing.T) {
@@ -186,9 +186,9 @@ func TestWrongParameter(t *testing.T) {
 	}
 	r, err := c.Call("STFC_CONNECTION", importStruct{"wrong param"})
 	assert.Equal(t, map[string]interface{}(nil), r)
-	assert.Equal(t, "RFC_INVALID_PARAMETER", err.(*RFCError).ErrorInfo.Code) // todo: should be "20" ??
-	assert.Equal(t, "RFC_INVALID_PARAMETER", err.(*RFCError).ErrorInfo.Key)
-	assert.Equal(t, "field 'XXX' not found", err.(*RFCError).ErrorInfo.Message)
+	assert.Equal(t, "RFC_INVALID_PARAMETER", err.(*RfcError).ErrorInfo.Code) // todo: should be "20" ??
+	assert.Equal(t, "RFC_INVALID_PARAMETER", err.(*RfcError).ErrorInfo.Key)
+	assert.Equal(t, "field 'XXX' not found", err.(*RfcError).ErrorInfo.Message)
 	c.Close()
 }
 
@@ -342,10 +342,10 @@ func TestInvalidParameterFunctionCall(t *testing.T) {
 	r, err := c.Call("STFC_CONNECTION", map[string]interface{}{"XXX": "wrongParameter"})
 	assert.Nil(t, r)
 	assert.NotNil(t, err)
-	assert.Equal(t, "Could not get the parameter description for \"XXX\"", err.(*RFCError).Description)
-	assert.Equal(t, "field 'XXX' not found", err.(*RFCError).ErrorInfo.Message)
-	assert.Equal(t, "RFC_INVALID_PARAMETER", err.(*RFCError).ErrorInfo.Code)
-	assert.Equal(t, "RFC_INVALID_PARAMETER", err.(*RFCError).ErrorInfo.Key)
+	assert.Equal(t, "Could not get the parameter description for \"XXX\"", err.(*RfcError).Description)
+	assert.Equal(t, "field 'XXX' not found", err.(*RfcError).ErrorInfo.Message)
+	assert.Equal(t, "RFC_INVALID_PARAMETER", err.(*RfcError).ErrorInfo.Code)
+	assert.Equal(t, "RFC_INVALID_PARAMETER", err.(*RfcError).ErrorInfo.Key)
 	c.Close()
 }
 
@@ -358,14 +358,14 @@ func TestErrorFunctionCall(t *testing.T) {
 	r, err := c.Call("RFC_RAISE_ERROR", map[string]interface{}{"MESSAGETYPE": "A"})
 	assert.Nil(t, r)
 	assert.NotNil(t, err)
-	assert.Equal(t, "Could not invoke function \"RFC_RAISE_ERROR\"", err.(*RFCError).Description)
-	assert.Equal(t, "Function not supported", err.(*RFCError).ErrorInfo.Message)
-	assert.Equal(t, "RFC_ABAP_MESSAGE", err.(*RFCError).ErrorInfo.Code)
-	assert.Equal(t, "Function not supported", err.(*RFCError).ErrorInfo.Key)
-	assert.Equal(t, "SR", err.(*RFCError).ErrorInfo.AbapMsgClass)
-	assert.Equal(t, "A", err.(*RFCError).ErrorInfo.AbapMsgType)
-	assert.Equal(t, "006", err.(*RFCError).ErrorInfo.AbapMsgNumber)
-	assert.Equal(t, "STRING", err.(*RFCError).ErrorInfo.AbapMsgV1)
+	assert.Equal(t, "Could not invoke function \"RFC_RAISE_ERROR\"", err.(*RfcError).Description)
+	assert.Equal(t, "Function not supported", err.(*RfcError).ErrorInfo.Message)
+	assert.Equal(t, "RFC_ABAP_MESSAGE", err.(*RfcError).ErrorInfo.Code)
+	assert.Equal(t, "Function not supported", err.(*RfcError).ErrorInfo.Key)
+	assert.Equal(t, "SR", err.(*RfcError).ErrorInfo.AbapMsgClass)
+	assert.Equal(t, "A", err.(*RfcError).ErrorInfo.AbapMsgType)
+	assert.Equal(t, "006", err.(*RfcError).ErrorInfo.AbapMsgNumber)
+	assert.Equal(t, "STRING", err.(*RfcError).ErrorInfo.AbapMsgV1)
 	c.Close()
 }
 
