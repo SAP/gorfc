@@ -1,31 +1,66 @@
-# SAP NW RFC Connector for [Go](https://golang.org)
+[SAP NetWeawer RFC SDK](https://support.sap.com/en/product/connectors/nwrfcsdk.html) client bindings for GO.
 
-[![GoDoc](https://img.shields.io/badge/godoc-reference-blue.svg?style=flat)](https://godoc.org/github.com/SAP/gorfc/gorfc) 
-[![Go Report Card](https://goreportcard.com/badge/github.com/SAP/gorfc)](https://goreportcard.com/report/github.com/SAP/gorfc) 
-[![license](https://img.shields.io/badge/license-Apache-blue.svg)](https://github.com/SAP/gorfc/blob/master/LICENSE)  
+[![license](https://img.shields.io/badge/license-Apache-blue.svg)](https://github.com/SAP/gorfc/blob/master/LICENSE)
+[![Go Report Card](https://goreportcard.com/badge/github.com/SAP/gorfc)](https://goreportcard.com/report/github.com/SAP/gorfc)
+[![GoDoc](https://img.shields.io/badge/godoc-reference-blue.svg?style=flat)](https://godoc.org/github.com/SAP/gorfc/gorfc)
 
-The *gorfc* package provides bindings for *SAP NW RFC Library*, for a comfortable way of calling remote enabled ABAP function modules (RFMs) from [Go](https://golang.org).
+## Features
 
-The current release is fully functional on Linux and experimental on Windows and macOS see the [Issue #1](https://github.com/SAP/gorfc/issues/1).
+- Stateless and stateful connections (multiple function calls in the same ABAP session / same context)
+- Automatic conversion between GO and ABAP datatypes
 
-## Table of contents
+## Supported Platforms
 
-* [Platforms and Prerequisites](#platforms-and-prerequisites)
-* [Install](#install)
-	* [GO](#install-and-configure-go)
-	* [SAP NW RFC Library](#install-sap-nw-rfc-library)
-	* [gorfc](#install-gorfc)
-* [Getting Started](#getting-started)
-* [To Do](#to-do)
-* [References](#references)
+- Windows 10, macOS, Linux
 
-## Platforms and Prerequisites
+## Prerequisites
 
-The SAP NW RFC Library is a prerequisite for using the Go RFC connector and must be installed on the same system. It is available on many platforms supported by Go, except Plan 9 and BSD.
+### All platforms
 
-A prerequisite to download *SAP NW RFC Library* is having a **customer or partner account** on *SAP Service Marketplace* . If you are SAP employee please check SAP OSS note [1037575 - Software download authorizations for SAP employees](http://service.sap.com/sap/support/notes/1037575).
+- GOLANG [requirements](https://golang.org/doc/install#requirements)
 
-The _SAP NW RFC Library_ is fully backwards compatible, supporting all NetWeaver systems, from today, down to release R/3 4.0. You can and should always use the newest version released on Service Marketplace and connect to older systems as well.
+- SAP NWRFC SDK 7.50 PL3 or later must be [downloaded](https://launchpad.support.sap.com/#/softwarecenter/template/products/_APP=00200682500000001943&_EVENT=DISPHIER&HEADER=Y&FUNCTIONBAR=N&EVENT=TREE&NE=NAVIGATE&ENR=01200314690100002214&V=MAINT) (SAP partner or customer account required) and [locally installed](http://sap.github.io/node-rfc/install.html#sap-nw-rfc-library-installation)
+
+  - Using the latest version is recommended as SAP NWRFC SDK is fully backwards compatible, supporting all NetWeaver systems, from today S4, down to R/3 release 4.6C.
+  - SAP NWRFC SDK [overview](https://support.sap.com/en/product/connectors/nwrfcsdk.html) and [release notes](https://launchpad.support.sap.com/#/softwarecenter/object/0020000000340702020)
+
+- Build from source on macOS and older Linux systems, may require `uchar.h` file, attached to [SAP OSS Note 2573953](https://launchpad.support.sap.com/#/notes/2573953), to be copied to SAP NWRFC SDK include directory: [documentation](http://sap.github.io/PyRFC/install.html#macos)
+
+### Windows
+
+- [Visual C++ Redistributable Package for Visual Studio 2013](https://www.microsoft.com/en-US/download/details.aspx?id=40784) is required for runtime, see [SAP Note 2573790 - Installation, Support and Availability of the SAP NetWeaver RFC Library 7.50](https://launchpad.support.sap.com/#/notes/2573790)
+
+- Build toolchain requires GCC and [MinGW](http://mingw-w64.org). Using TDM_GCC may lead to issues: https://stackoverflow.com/questions/35004744/golang-oci8-error-adding-symbols-file-in-wrong-format
+
+### macOS
+
+- Build toolchain requires GCC and Xcode Command Line Tools:
+
+```shell
+$ xcode-select --install
+```
+
+- The macOS firewall stealth mode must be disabled ([Can't ping a machine - why?](https://discussions.apple.com/thread/2554739)):
+
+```shell
+sudo /usr/libexec/ApplicationFirewall/socketfilterfw --setstealthmode off
+```
+
+- Remote paths must be set in SAP NWRFC SDK for macOS: [documentation](http://sap.github.io/PyRFC/install.html#macos)
+
+- Build from source requires `uchar.h` file, attached to [SAP OSS Note 2573953](https://launchpad.support.sap.com/#/notes/2573953), to be copied to SAP NWRFC SDK include directory: [documentation](http://sap.github.io/PyRFC/install.html#macos)
+
+- Optionally: [valgrind](https://stackoverflow.com/questions/58360093/how-to-install-valgrind-on-macos-catalina-10-15-with-homebrew)
+
+## SPJ articles
+
+Highly recommended reading about RFC communication and SAP NW RFC Library, published in the SAP Professional Journal (SPJ)
+
+- [Part I RFC Client Programming](https://wiki.scn.sap.com/wiki/x/zz27Gg)
+
+- [Part II RFC Server Programming](https://wiki.scn.sap.com/wiki/x/9z27Gg)
+
+- [Part III Advanced Topics](https://wiki.scn.sap.com/wiki/x/FD67Gg)
 
 ## Install
 
@@ -119,7 +154,7 @@ func abapSystem() gorfc.ConnectionParameter {
         Ashost:    "11.111.11.111",
         Sysnr:     "00",
         Saprouter: "/H/222.22.222.22/S/2222/W/xxxxx/H/222.22.222.222/H/",
-    }   
+    }
 }
 
 func main() {
@@ -141,7 +176,7 @@ func main() {
             "RFCDATA1": "HELLÖ SÄP",
             "RFCDATA2": "DATA222",
         },
-    }   
+    }
     r, _ := c.Call("STFC_STRUCTURE", params)
 
     assert.NotNil(t, r["ECHOSTRUCT"])
@@ -154,7 +189,7 @@ func main() {
     assert.Equal(t, importStruct["RFCINT1"], echoStruct["RFCINT1"])
     assert.Equal(t, importStruct["RFCINT2"], echoStruct["RFCINT2"])
     assert.Equal(t, importStruct["RFCINT4"], echoStruct["RFCINT4"])
-    //  assert.Equal(t, importStruct["RFCHEX3"], echoStruct["RFCHEX3"])
+    // assert.Equal(t, importStruct["RFCHEX3"], echoStruct["RFCHEX3"])
     assert.Equal(t, importStruct["RFCTIME"].(time.Time).Format("150405"), echoStruct["RFCTIME"].(time.Time).Format("15.
     assert.Equal(t, importStruct["RFCDATE"].(time.Time).Format("20060102"), e/Users/d037732/Downloads/gorfc/README.mdchoStruct["RFCDATE"].(time.Time).Format(".
     assert.Equal(t, importStruct["RFCDATA1"], echoStruct["RFCDATA1"])
@@ -166,15 +201,10 @@ func main() {
     c.Close()
 ```
 
-## To Do
-
-* Improve the documentation
-* Fix Windows compiler flags
-
 ## References
 
-* <a name="ref1"></a>[GO Installation](https://golang.org/doc/install)
-* <a name="ref2"></a>[GO Configuration](https://golang.org/doc/code.html)
-* <a name="ref3"></a>[GO Environment Variables](https://golang.org/cmd/go/#hdr-Environment_variables)
-* <a name="ref4"></a>[GO on Windows Example](http://www.wadewegner.com/2014/12/easy-go-programming-setup-for-windows/)
-* <a name="ref5"></a>[Another GO on Windows Example](https://github.com/abourget/getting-started-with-golang/blob/master/Getting_Started_for_Windows.md)
+- <a name="ref1"></a>[GO Installation](https://golang.org/doc/install)
+- <a name="ref2"></a>[GO Configuration](https://golang.org/doc/code.html)
+- <a name="ref3"></a>[GO Environment Variables](https://golang.org/cmd/go/#hdr-Environment_variables)
+- <a name="ref4"></a>[GO on Windows Example](http://www.wadewegner.com/2014/12/easy-go-programming-setup-for-windows/)
+- <a name="ref5"></a>[Another GO on Windows Example](https://github.com/abourget/getting-started-with-golang/blob/master/Getting_Started_for_Windows.md)

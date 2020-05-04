@@ -24,9 +24,10 @@
 
 # RFC traces
 *.trc
+*.log
 
 # sapnwrfc.ini example
-gorfc/sapnwrfc.ini
+# gorfc/sapnwrfc.ini
 
 # Packages
 GoRFC/pkg/
@@ -43,4 +44,8 @@ Thumbs.db
 ### JetBrains
 *.iml
 .idea
+
+### VSCode
+.vscode
+*.code-workspace
 

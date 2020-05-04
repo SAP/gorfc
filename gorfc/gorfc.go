@@ -1,60 +1,61 @@
-// +build linux,cgo amd64,cgo
+// +build linux,cgo amd64,cgo darwin,cgo
 
-// gorfc wraps the SAP NetWeaver RFC library written in C.
-// Its provides methods for maintaining a connection to an ABAP backend and calling remote enabled functions from Go.
-// The functions of the library take and return Go data types.
+// Package gorfc provides SAP NetWeawer RFC SDK client bindings for GO
 package gorfc
 
 /*
 
+#cgo windows CFLAGS: -DSAPonNT -D_CRT_NON_CONFORMING_SWPRINTFS -D_CRT_SECURE_NO_DEPRECATE -D_CRT_NONSTDC_NO_DEPRECATE -D_CONSOLE
+#cgo windows CFLAGS: -D_AFXDLL -DWIN32 -D_WIN32_WINNT=0x0502 -DWIN64 -D_AMD64_ -DNDEBUG -DSAPwithUNICODE -DUNICODE -D_UNICODE
+#cgo windows CFLAGS: -DSAPwithTHREADS -D_ATL_ALLOW_CHAR_UNSIGNED -DSAP_PLATFORM_MAKENAME=ntintel
+#cgo windows CFLAGS: -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE -D__NO_MATH_INLINES
+#cgo windows CFLAGS: -O2 -g -pipe -m64 -mwindows -pthread -march=x86-64
+#cgo windows CFLAGS: -fno-strict-aliasing -fno-omit-frame-pointer -fexceptions -funsigned-char
+#cgo windows CFLAGS: -Wall -Wno-uninitialized -Wno-long-long
+#cgo windows CFLAGS: -Wcast-align -Wunused-variable
+// todo -EHs ?
+// todo -Gy ? -ffunction-sections -fdata-sections
+// todo MD ? -lpthread -lm
+// todo -nologo -W3 -Z7  -GL -O2 -Oy- /we4552 /we4700 /we4789
+
+#cgo windows CFLAGS: -IC:/Tools/nwrfcsdk/include/
+#cgo windows LDFLAGS: -LC:/Tools/nwrfcsdk/lib/ -lsapnwrfc -llibsapucum
+
+#cgo windows LDFLAGS: -O2 -g -pthread -pie -fPIE
+#cgo windows LDFLAGS: -OPT:REF -LTCG
+// todo -NXCOMPAT -STACK:0x2000000 -SWAPRUN:NET -DEBUG -DEBUGTYPE:CV,FIXUP -MACHINE:amd64 -nologo
+
 #cgo linux CFLAGS: -DNDEBUG -D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64 -DSAPonUNIX
 #cgo linux CFLAGS: -DSAPwithUNICODE -D__NO_MATH_INLINES -DSAPwithTHREADS -DSAPonLIN
-#cgo linux CFLAGS: -O2 -minline-all-stringops -g -fno-strict-aliasing -fno-omit-frame-pointer
+#cgo linux CFLAGS: -O2 -g -fno-strict-aliasing -fno-omit-frame-pointer
 #cgo linux CFLAGS: -m64 -fexceptions -funsigned-char -Wall -Wno-uninitialized -Wno-long-long
 #cgo linux CFLAGS: -Wcast-align -pthread -pipe -Wno-unused-variable
 
 #cgo linux CFLAGS: -I/usr/local/sap/nwrfcsdk/include
 #cgo linux LDFLAGS: -L/usr/local/sap/nwrfcsdk/lib -lsapnwrfc -lsapucum
 
-#cgo linux LDFLAGS: -O2 -minline-all-stringops -g -fno-strict-aliasing -fno-omit-frame-pointer
-#cgo linux LDFLAGS: -m64 -fexceptions -funsigned-char -Wall -Wno-uninitialized -Wno-long-long
-#cgo linux LDFLAGS: -Wcast-align -pthread
+#cgo linux LDFLAGS: -O2 -g -pthread
 
-#cgo windows CFLAGS: -DNDEBUG -D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64 -DSAPonWIN
-#cgo windows CFLAGS: -DSAPwithUNICODE -D__NO_MATH_INLINES -DSAPwithTHREADS
-#cgo windows CFLAGS: -O2 -minline-all-stringops -g -fno-strict-aliasing -fno-omit-frame-pointer
-#cgo windows CFLAGS: -m64 -fexceptions -funsigned-char -Wall -Wno-uninitialized -Wno-long-long
-#cgo windows CFLAGS: -Wcast-align -pipe -Wunused-variable
+#cgo darwin CFLAGS: -Wall -O2 -Wno-uninitialized -Wcast-align
+#cgo darwin CFLAGS: -DSAP_UC_is_wchar -DSAPwithUNICODE -D__NO_MATH_INLINES -DSAPwithTHREADS -DSAPonLIN
+#cgo darwin CFLAGS: -fexceptions -funsigned-char -fno-strict-aliasing -fPIC -pthread -std=c17 -mmacosx-version-min=10.15
+#cgo darwin CFLAGS: -fno-omit-frame-pointer
 
-#cgo windows CFLAGS: -IC:/nwrfcsdk/include/
-#cgo windows LDFLAGS: -LC:/nwrfcsdk/lib/ -lsapnwrfc -llibsapucum
+#cgo darwin CFLAGS: -I/usr/local/sap/nwrfcsdk/include
+#cgo darwin LDFLAGS: -L/usr/local/sap/nwrfcsdk/lib -lsapnwrfc -lsapucum
+#cgo darwin LDFLAGS: -Wl,-rpath,/usr/local/sap/nwrfcsdk/lib
 
-#cgo windows LDFLAGS: -O2 -minline-all-stringops -g -fno-strict-aliasing -fno-omit-frame-pointer
-#cgo windows LDFLAGS: -m64 -fexceptions -funsigned-char -Wall -Wno-uninitialized -Wno-long-long
-#cgo windows LDFLAGS: -Wcast-align
-
-#cgo darwin LDFLAGS: -lsapnwrfc -lsapucum
-#cgo darwin LDFLAGS: -O2 -minline-all-stringops -g -fno-strict-aliasing -fno-omit-frame-pointer
-#cgo darwin LDFLAGS: -m64 -fexceptions -funsigned-char -Wall -Wno-uninitialized -Wno-long-long
-#cgo darwin LDFLAGS: -Wcast-align -pthread
-
-#cgo darwin CFLAGS: -DNDEBUG -D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64 -DSAPonUNIX
-#cgo darwin CFLAGS: -DSAPwithUNICODE -D__NO_MATH_INLINES -DSAPwithTHREADS -DSAPonDARW
-#cgo darwin CFLAGS: -O2 -minline-all-stringops -g -fno-strict-aliasing -fno-omit-frame-pointer
-#cgo darwin CFLAGS: -m64 -fexceptions  -Wall -Wno-uninitialized -Wno-long-long
-#cgo darwin CFLAGS: -Wcast-align -pthread -pipe -Wno-unused-variable
+#cgo darwin LDFLAGS: -O2 -g -pthread
+#cgo darwin LDFLAGS: -stdlib=libc++
+#cgo darwin LDFLAGS: -mmacosx-version-min=10.15
 
 #include <sapnwrfc.h>
 
 static SAP_UC* GoMallocU(unsigned size) {
-	return mallocU(size);
+	return (SAP_UC*)(mallocU(size));
 }
 
-//static SAP_UC* GoMemsetU(SAP_UTF16 * s, int c, size_t n) {
-//	return memsetU(s, c, n);
-//}
-
-static int GoStrlenU(SAP_UTF16 *str) {
+static unsigned GoStrlenU(SAP_UTF16 *str) {
 	return strlenU(str);
 }
 
@@ -70,10 +71,29 @@ import (
 	"unsafe"
 )
 
+/*
+static uint GoStrlenU(SAP_UTF16 *str) {
+	return strlenU(str);
+}
+
+static uint GoStrlenU16(SAP_UTF16 *str) {
+	return strlenU16(str);
+}
+
+static SAP_UC* GoMemsetU(SAP_UTF16 * s, int c, size_t n) {
+	return (SAP_UC *)memsetU(s, c, n);
+}
+
+static uint GoStrlenU(SAP_UTF16 *str) {
+	return strlenU(str);
+}
+*/
+
 //################################################################################
 //# RFC ERROR                                                            	 	 #
 //################################################################################
 
+// RfcError is returned by SAP NWRFC SDK
 type RfcError struct {
 	Description string
 	ErrorInfo   rfcSDKError
@@ -96,25 +116,16 @@ func rfcError(errorInfo C.RFC_ERROR_INFO, format string, a ...interface{}) *RfcE
 func fillString(gostr string) (sapuc *C.SAP_UC, err error) {
 	var rc C.RFC_RC
 	var errorInfo C.RFC_ERROR_INFO
-	var result_len C.uint
-	sapuc_size := C.uint(len(gostr) + 1)
-	sapuc = C.GoMallocU(sapuc_size)
-	cStr := (*C.uchar)(unsafe.Pointer(C.CString(gostr)))
-	defer C.free(unsafe.Pointer(cStr))
+	var resultLen C.uint
+	sapucSize := C.uint(len(gostr) + 1)
+	sapuc = C.GoMallocU(sapucSize)
 	*sapuc = 0
-
-	rc = C.RfcUTF8ToSAPUC((*C.RFC_BYTE)(cStr), C.uint(len(gostr)), sapuc, &sapuc_size, &result_len, &errorInfo)
+	cStr := C.CString(gostr)
+	defer C.free(unsafe.Pointer(cStr))
+	rc = C.RfcUTF8ToSAPUC((*C.RFC_BYTE)(cStr), C.uint(len(gostr)), sapuc, &sapucSize, &resultLen, &errorInfo)
 	if rc != C.RFC_OK {
 		err = rfcError(errorInfo, "Could not fill the string \"%v\"", gostr)
 	}
-	return
-}
-
-// fillByte allocates memory for the return value that has to be freed
-func fillBytes(gobytes []byte) (bytes *C.SAP_RAW) {
-	size := C.size_t(len(gobytes))
-	bytes = (*C.SAP_RAW)(C.malloc(size))
-	C.memcpy(unsafe.Pointer(bytes), unsafe.Pointer(&gobytes[0]), size)
 	return
 }
 
@@ -161,29 +172,40 @@ func fillVariable(cType C.RFCTYPE, container C.RFC_FUNCTION_HANDLE, cName *C.SAP
 			return rfcError(errorInfo, "Could not get table")
 		}
 		err = fillTable(typeDesc, table, value)
+	case C.RFCTYPE_BYTE:
+		bValue = (*C.SAP_RAW)(C.CBytes(reflect.ValueOf(value).Bytes()))
+		cLen := C.uint(len(reflect.ValueOf(value).Bytes()))
+		rc = C.RfcSetBytes(container, cName, bValue, cLen, &errorInfo)
+	case C.RFCTYPE_XSTRING:
+		bValue = (*C.SAP_RAW)(C.CBytes(reflect.ValueOf(value).Bytes()))
+		cLen := C.uint(len(reflect.ValueOf(value).Bytes()))
+		rc = C.RfcSetXString(container, cName, bValue, cLen, &errorInfo)
 	case C.RFCTYPE_CHAR:
 		cValue, err = fillString(reflect.ValueOf(value).String())
-		rc = C.RfcSetChars(container, cName, (*C.RFC_CHAR)(cValue), C.uint(C.GoStrlenU((*C.SAP_UTF16)(cValue))), &errorInfo)
-	case C.RFCTYPE_BYTE:
-		bValue = fillBytes(reflect.ValueOf(value).Bytes())
-		rc = C.RfcSetBytes(container, cName, bValue, C.uint(len(reflect.ValueOf(value).Bytes())), &errorInfo)
-	case C.RFCTYPE_XSTRING:
-		bValue = fillBytes(reflect.ValueOf(value).Bytes())
-		rc = C.RfcSetXString(container, cName, bValue, C.uint(len(reflect.ValueOf(value).Bytes())), &errorInfo)
+		//cLen := (C.uint)(len(reflect.ValueOf(value).String()))
+		cLen := C.uint(C.GoStrlenU((*C.SAP_UTF16)(cValue)))
+		rc = C.RfcSetChars(container, cName, (*C.RFC_CHAR)(cValue), cLen, &errorInfo)
 	case C.RFCTYPE_STRING:
 		cValue, err = fillString(reflect.ValueOf(value).String())
-		rc = C.RfcSetString(container, cName, cValue, C.uint(C.GoStrlenU((*C.SAP_UTF16)(cValue))), &errorInfo)
+		//cLen := (C.uint)(len(reflect.ValueOf(value).String()))
+		cLen := C.uint(C.GoStrlenU((*C.SAP_UTF16)(cValue)))
+		rc = C.RfcSetString(container, cName, cValue, cLen, &errorInfo)
 	case C.RFCTYPE_NUM:
 		cValue, err = fillString(reflect.ValueOf(value).String())
-		rc = C.RfcSetNum(container, cName, (*C.RFC_NUM)(cValue), C.uint(C.GoStrlenU((*C.SAP_UTF16)(cValue))), &errorInfo)
+		//cLen := (C.uint)(len(reflect.ValueOf(value).String()))
+		cLen := C.uint(C.GoStrlenU((*C.SAP_UTF16)(cValue)))
+		rc = C.RfcSetNum(container, cName, (*C.RFC_NUM)(cValue), cLen, &errorInfo)
 	case C.RFCTYPE_BCD:
-		// support for float missing
 		cValue, err = fillString(reflect.ValueOf(value).String())
-		rc = C.RfcSetString(container, cName, cValue, C.uint(C.GoStrlenU((*C.SAP_UTF16)(cValue))), &errorInfo)
+		//cLen := (C.uint)(len(reflect.ValueOf(value).String()))
+		cLen := C.uint(C.GoStrlenU((*C.SAP_UTF16)(cValue)))
+		rc = C.RfcSetString(container, cName, cValue, cLen, &errorInfo)
 	case C.RFCTYPE_FLOAT:
 		rc = C.RfcSetFloat(container, cName, C.RFC_FLOAT(reflect.ValueOf(value).Float()), &errorInfo)
 	case C.RFCTYPE_INT, C.RFCTYPE_INT1, C.RFCTYPE_INT2:
 		rc = C.RfcSetInt(container, cName, C.RFC_INT(reflect.ValueOf(value).Int()), &errorInfo)
+	case C.RFCTYPE_INT8:
+		rc = C.RfcSetInt8(container, cName, C.RFC_INT8(reflect.ValueOf(value).Int()), &errorInfo)
 	case C.RFCTYPE_DATE:
 		cValue, err = fillString(value.(time.Time).Format("20060102"))
 		rc = C.RfcSetDate(container, cName, (*C.RFC_CHAR)(cValue), &errorInfo)
@@ -208,13 +230,13 @@ func fillStructure(typeDesc C.RFC_TYPE_DESC_HANDLE, container C.RFC_STRUCTURE_HA
 	s := reflect.ValueOf(value)
 
 	if s.Type().Kind() == reflect.Map {
+		// Table passed as array of maps
 		keys := s.MapKeys()
 		if len(keys) > 0 {
 			if keys[0].Kind() == reflect.String {
 				for _, nameValue := range keys {
 					fieldName := nameValue.String()
 					fieldValue := s.MapIndex(nameValue).Interface()
-
 					err = fillStructureField(typeDesc, container, fieldName, fieldValue)
 				}
 			} else {
@@ -222,14 +244,15 @@ func fillStructure(typeDesc C.RFC_TYPE_DESC_HANDLE, container C.RFC_STRUCTURE_HA
 			}
 		}
 	} else if s.Type().Kind() == reflect.Struct {
+		// Table passed as array of structures
 		for i := 0; i < s.NumField(); i++ {
 			fieldName := s.Type().Field(i).Name
 			fieldValue := s.Field(i).Interface()
-
 			err = fillStructureField(typeDesc, container, fieldName, fieldValue)
 		}
 	} else {
-		return rfcError(errorInfo, "Structures can only be passed as types map[string]interface{} or go-structures")
+		// Table passed as array of variables
+		err = fillStructureField(typeDesc, container, "", s.Interface())
 	}
 	return
 }
@@ -258,7 +281,6 @@ func fillTable(typeDesc C.RFC_TYPE_DESC_HANDLE, container C.RFC_TABLE_HANDLE, li
 		if lineHandle == nil {
 			return rfcError(errorInfo, "Could not append new row to table")
 		}
-
 		err = fillStructure(typeDesc, lineHandle, line.Interface())
 	}
 	return
@@ -269,35 +291,32 @@ func fillTable(typeDesc C.RFC_TYPE_DESC_HANDLE, container C.RFC_TABLE_HANDLE, li
 //################################################################################
 //# Wrapper functions take C values and return Go values
 
-func wrapString(uc *C.SAP_UC, strip bool) (result string, err error) {
-	return nWrapString(uc, -1, strip)
+func wrapString(sapuc *C.SAP_UC, strip bool) (string, error) {
+	return nWrapString(sapuc, C.uint(C.strlenU((*C.ushort)(sapuc))), strip)
 }
 
-func nWrapString(uc *C.SAP_UC, length C.int, strip bool) (result string, err error) {
-	var rc C.RFC_RC
+func nWrapString(sapuc *C.SAP_UC, sapucLength C.uint, strip bool) (string, error) {
 	var errorInfo C.RFC_ERROR_INFO
-	if length == -1 {
-		length = C.int(C.GoStrlenU((*C.SAP_UTF16)(uc)))
-	}
-	if length == 0 {
-		return "", err
-	}
-	utf8Size := C.uint(length*3) + 1
-	utf8str := (*C.char)(unsafe.Pointer(C.malloc((C.size_t)(utf8Size))))
-	defer C.free(unsafe.Pointer(utf8str)) // _todo: Memory access error on Windows only, when trying to free RFCCHAR1 of RFCTABLE in function call test
+	var rc C.RFC_RC
+	var resultLength C.uint
 
-	*utf8str = 0
-	resultLen := C.uint(0)
-	rc = C.RfcSAPUCToUTF8(uc, (C.uint)(length), (*C.RFC_BYTE)(unsafe.Pointer(utf8str)), &utf8Size, &resultLen, &errorInfo)
-	if rc != C.RFC_OK {
-		return result, rfcError(errorInfo, "Failed wrapping a C string")
+	if sapucLength == 0 {
+		return "", nil
 	}
-	result = C.GoString(utf8str)
+
+	utf8size := C.uint(3*sapucLength + 1)
+	utf8Str := (*C.RFC_BYTE)(C.malloc((C.size_t)(utf8size)))
+	defer C.free(unsafe.Pointer(utf8Str))
+
+	rc = C.RfcSAPUCToUTF8(sapuc, C.uint(sapucLength), utf8Str, &utf8size, &resultLength, &errorInfo)
+	if rc != C.RFC_OK {
+		return "", fmt.Errorf("wrapString sapucLength %v utf8size %v", sapucLength, utf8size)
+	}
+	result := C.GoString((*C.char)(unsafe.Pointer(utf8Str)))
 	if strip {
 		result = strings.Trim(result, "\x00 ")
-		return
 	}
-	return
+	return result, nil
 }
 
 type rfcSDKError struct {
@@ -332,40 +351,12 @@ func (err rfcSDKError) String() string {
 	return fmt.Sprintf("rfcSDKError[%v, %v, %v, %v, %v, %v, %v, %v, %v, %v]", err.Message, err.Code, err.Key, err.AbapMsgClass, err.AbapMsgType, err.AbapMsgNumber, err.AbapMsgV1, err.AbapMsgV2, err.AbapMsgV3, err.AbapMsgV4)
 }
 
-type ConnectionAttributes struct {
-	Dest                  string // RFC destination
-	Host                  string // Own host name
-	PartnerHost           string // Partner host name
-	SysNumber             string // R/3 system number
-	SysId                 string // R/3 system ID
-	Client                string // Client ("Mandant")
-	User                  string // User
-	Language              string // Language
-	Trace                 string // Trace level (0-3)
-	IsoLanguage           string // 2-byte ISO-Language
-	Codepage              string // Own code page
-	PartnerCodepage       string // Partner code page
-	RfcRole               string // C/S: RFC Client / RFC Server
-	Type                  string // 2/3/E/R: R/2,R/3,Ext,Reg.Ext
-	PartnerType           string // 2/3/E/R: R/2,R/3,Ext,Reg.Ext
-	Rel                   string // My system release
-	PartnerRel            string // Partner system release
-	KernelRel             string // Partner kernel release
-	CpicConvId            string // CPI-C Conversation ID
-	ProgName              string // Name of the calling APAB program (report, module pool)
-	PartnerBytesPerChar   string // Number of bytes per character in the backend's current codepage. Note this is different from the semantics of the PCS parameter.
-	PartnerSystemCodepage string // Partner system code page
-	Reserved              string // Reserved for later use
-}
-
-func (connAttr ConnectionAttributes) String() string {
-	return fmt.Sprintf("ConnectionAttributes:\n dest= %v\n host= %v\n partnerHost= %v\n sysNumber= %v\n sysID= %v\n client= %v\n user= %v\n lang= %v\n trace= %v\n isoLang= %v\n codePage= %v\n partnerCodepage= %v\n RFCRole= %v\n partnerType= %v\n rel= %v\n partnerRel= %v\n kernalRel= %v\n CPI-CConvId= %v\n progName= %v\n partnerBytesPerChar= %v\n partnerSystemCodepage= %v\n reserved= %v",
-		connAttr.Dest, connAttr.Host, connAttr.PartnerHost, connAttr.SysNumber, connAttr.SysId, connAttr.Client, connAttr.User, connAttr.Language,
-		connAttr.Trace, connAttr.IsoLanguage, connAttr.Codepage, connAttr.PartnerCodepage, connAttr.RfcRole, connAttr.PartnerType, connAttr.Rel,
-		connAttr.PartnerRel, connAttr.KernelRel, connAttr.CpicConvId, connAttr.ProgName, connAttr.PartnerBytesPerChar, connAttr.PartnerSystemCodepage, connAttr.Reserved)
-}
+// ConnectionAttributes returned by getConnectionInfo() method
+type ConnectionAttributes map[string]string
 
 func wrapConnectionAttributes(attributes C.RFC_ATTRIBUTES, strip bool) (connAttr ConnectionAttributes, err error) {
+	connAttr = make(map[string]string)
+
 	dest, err := nWrapString(&attributes.dest[0], 64, strip)
 	host, err := nWrapString(&attributes.host[0], 100, strip)
 	partnerHost, err := nWrapString(&attributes.partnerHost[0], 100, strip)
@@ -388,10 +379,35 @@ func wrapConnectionAttributes(attributes C.RFC_ATTRIBUTES, strip bool) (connAttr
 	progName, err := nWrapString(&attributes.progName[0], 128, strip)
 	partnerBytesPerChar, err := nWrapString(&attributes.partnerBytesPerChar[0], 1, strip)
 	partnerSystemCodepage, err := nWrapString(&attributes.partnerSystemCodepage[0], 4, strip)
-	reserved, err := nWrapString(&attributes.reserved[0], 78, strip)
+	partnerIP, err := nWrapString(&attributes.partnerIP[0], 15, strip)
+	partnerIPv6, err := nWrapString(&attributes.partnerIPv6[0], 45, strip)
+	//reserved, err := nWrapString(&attributes.reserved[0], 17, strip)
 
-	connAttr = ConnectionAttributes{dest, host, partnerHost, sysNumber, sysId, client, user, language, trace, isoLanguage, codepage, partnerCodepage, rfcRole,
-		_type, partnerType, rel, partnerRel, kernelRel, cpicConvId, progName, partnerBytesPerChar, partnerSystemCodepage, reserved}
+	connAttr["dest"] = dest
+	connAttr["host"] = host
+	connAttr["partnerHost"] = partnerHost
+	connAttr["sysNumber"] = sysNumber
+	connAttr["sysId"] = sysId
+	connAttr["client"] = client
+	connAttr["user"] = user
+	connAttr["language"] = language
+	connAttr["trace"] = trace
+	connAttr["isoLanguage"] = isoLanguage
+	connAttr["codepage"] = codepage
+	connAttr["partnerCodepage"] = partnerCodepage
+	connAttr["rfcRole"] = rfcRole
+	connAttr["type"] = _type
+	connAttr["partnerType"] = partnerType
+	connAttr["rel"] = rel
+	connAttr["partnerRel"] = partnerRel
+	connAttr["kernelRel"] = kernelRel
+	connAttr["cpicConvId"] = cpicConvId
+	connAttr["progName"] = progName
+	connAttr["partnerBytesPerChar"] = partnerBytesPerChar
+	connAttr["partnerSystemCodepage"] = partnerSystemCodepage
+	connAttr["partnerIP"] = partnerIP
+	connAttr["partnerIPv6"] = partnerIPv6
+
 	return
 }
 
@@ -601,6 +617,7 @@ func wrapVariable(cType C.RFCTYPE, container C.RFC_FUNCTION_HANDLE, cName *C.SAP
 	var intValue C.RFC_INT
 	var int1Value C.RFC_INT1
 	var int2Value C.RFC_INT2
+	var int8Value C.RFC_INT8
 	var dateValue *C.RFC_CHAR
 	var timeValue *C.RFC_CHAR
 
@@ -627,7 +644,7 @@ func wrapVariable(cType C.RFCTYPE, container C.RFC_FUNCTION_HANDLE, cName *C.SAP
 		if rc != C.RFC_OK {
 			return result, rfcError(errorInfo, "Failed getting chars")
 		}
-		return nWrapString((*C.SAP_UC)(charValue), C.int(cLen), strip)
+		return nWrapString((*C.SAP_UC)(charValue), cLen, strip)
 	case C.RFCTYPE_STRING:
 		rc = C.RfcGetStringLength(container, cName, &strLen, &errorInfo)
 		if rc != C.RFC_OK {
@@ -650,31 +667,28 @@ func wrapVariable(cType C.RFCTYPE, container C.RFC_FUNCTION_HANDLE, cName *C.SAP
 		if rc != C.RFC_OK {
 			return result, rfcError(errorInfo, "Failed getting num")
 		}
-		return nWrapString((*C.SAP_UC)(numValue), C.int(cLen), strip)
+		return nWrapString((*C.SAP_UC)(numValue), cLen, strip)
 	case C.RFCTYPE_BYTE:
 		byteValue = (*C.SAP_RAW)(C.malloc(C.size_t(cLen)))
 		defer C.free(unsafe.Pointer(byteValue))
-
 		rc = C.RfcGetBytes(container, cName, byteValue, cLen, &errorInfo)
 		if rc != C.RFC_OK {
 			return result, rfcError(errorInfo, "Failed getting bytes")
 		}
-		return (*[1 << 30]byte)(unsafe.Pointer(byteValue))[:cLen:cLen], err
+		return C.GoBytes(unsafe.Pointer(byteValue), C.int(cLen)), err
 	case C.RFCTYPE_XSTRING:
 		rc = C.RfcGetStringLength(container, cName, &strLen, &errorInfo)
 		if rc != C.RFC_OK {
 			return result, rfcError(errorInfo, "Failed getting xstring length")
 		}
 
-		byteValue = (*C.SAP_RAW)(C.malloc(C.size_t(strLen + 1)))
+		byteValue = (*C.SAP_RAW)(C.malloc(C.size_t(strLen)))
 		defer C.free(unsafe.Pointer(byteValue))
-		*byteValue = 0
-
 		rc = C.RfcGetXString(container, cName, byteValue, strLen, &resultLen, &errorInfo)
 		if rc != C.RFC_OK {
 			return result, rfcError(errorInfo, "Failed getting xstring")
 		}
-		return (*[1 << 30]byte)(unsafe.Pointer(byteValue))[:resultLen:resultLen], err
+		return C.GoBytes(unsafe.Pointer(byteValue), C.int(cLen)), err
 	case C.RFCTYPE_BCD:
 		// An upper bound for the length of the _string representation_
 		// of the BCD is given by (2*cLen)-1 (each digit is encoded in 4bit,
@@ -684,20 +698,18 @@ func wrapVariable(cType C.RFCTYPE, container C.RFC_FUNCTION_HANDLE, cName *C.SAP
 		strLen = 2*cLen + 1
 		stringValue = C.GoMallocU(strLen + 1)
 		defer C.free(unsafe.Pointer(stringValue))
-
 		rc = C.RfcGetString(container, cName, stringValue, strLen+1, &resultLen, &errorInfo)
-		/*if rc == 23: # Buffer too small, use returned requried result length
-		  print("Warning: Buffer for BCD (cLen={}, buffer={}) too small: "
-				"trying with {}".format(cLen, strLen, resultLen))
-		  free(stringValue)
-		  strLen = resultLen
-		  stringValue = mallocU(strLen+1)
-		  rc = RfcGetString(container, cName, stringValue, strLen+1, &resultLen, &errorInfo)*/
-		if rc != C.RFC_OK {
-			return result, rfcError(errorInfo, "Failed getting BCD")
+		if rc == 23 {
+			//Buffer too small, use returned requried result length
+			C.free(unsafe.Pointer(stringValue))
+			strLen = resultLen
+			stringValue = C.GoMallocU(strLen + 1)
+			rc = C.RfcGetString(container, cName, stringValue, strLen+1, &resultLen, &errorInfo)
+			if rc != C.RFC_OK {
+				return result, rfcError(errorInfo, "Failed getting BCD")
+			}
 		}
 		return wrapString(stringValue, strip)
-		//return Decimal(wrapString(stringValue))
 	case C.RFCTYPE_FLOAT:
 		rc = C.RfcGetFloat(container, cName, &floatValue, &errorInfo)
 		if rc != C.RFC_OK {
@@ -722,6 +734,12 @@ func wrapVariable(cType C.RFCTYPE, container C.RFC_FUNCTION_HANDLE, cName *C.SAP
 			return result, rfcError(errorInfo, "Failed getting int2")
 		}
 		return int(int2Value), err
+	case C.RFCTYPE_INT8:
+		rc = C.RfcGetInt8(container, cName, &int8Value, &errorInfo)
+		if rc != C.RFC_OK {
+			return result, rfcError(errorInfo, "Failed getting int8")
+		}
+		return int(int8Value), err
 	case C.RFCTYPE_DATE:
 		dateValue = (*C.RFC_CHAR)(C.malloc(8))
 		defer C.free(unsafe.Pointer(dateValue))
@@ -859,27 +877,7 @@ func GetNWRFCLibVersion() (major, minor, patchlevel uint) {
 //# CONNECTION                                                                   #
 //################################################################################
 
-// ConnectionParameter holds all the connection parameters possible (at the moment).
-type ConnectionParameter struct {
-	Dest            string
-	Client          string
-	User            string // Username
-	Passwd          string // Password
-	Lang            string // Language
-	Trace           string
-	Ashost          string
-	Sysnr           string
-	Mshost          string
-	Msserv          string
-	Sysid           string
-	Group           string
-	Snc_qop         string
-	Snc_myname      string
-	Snc_partnername string
-	Snc_lib         string
-	Mysapsso2       string
-	Saprouter       string
-}
+type ConnectionParameters map[string]string
 
 type Connection struct {
 	handle             C.RFC_CONNECTION_HANDLE
@@ -887,7 +885,8 @@ type Connection struct {
 	returnImportParams bool
 	alive              bool
 	paramCount         C.uint
-	connectionParams   []C.RFC_CONNECTION_PARAMETER
+	connParams         []C.RFC_CONNECTION_PARAMETER
+	connectionParams   ConnectionParameters
 	// tHandle C.RFC_TRANSACTION_HANDLE
 	// active_transaction bool
 	// uHandle C.RFC_UNIT_HANDLE
@@ -895,40 +894,47 @@ type Connection struct {
 }
 
 func connectionFinalizer(conn *Connection) {
-	for _, connParam := range conn.connectionParams {
+	for _, connParam := range conn.connParams {
 		C.free(unsafe.Pointer(connParam.name))
 		C.free(unsafe.Pointer(connParam.value))
 	}
 }
 
-// ConnectionFromParams creates a new connection with the given connection parameters and tries to open it. If this is successfull it returns the connection else it returns nil.
-func ConnectionFromParams(connParams ConnectionParameter) (conn *Connection, err error) {
+// ConnectionFromParams creates a new connection with the given connection parameters and tries to open it.
+// Returns the connection if successfull, otherwise nil.
+func ConnectionFromParams(connectionParams ConnectionParameters) (conn *Connection, err error) {
 	conn = new(Connection)
-	runtime.SetFinalizer(conn, connectionFinalizer)
-	p := reflect.ValueOf(&connParams).Elem()
+
 	conn.handle = nil
-	conn.paramCount = C.uint(p.NumField())
-	conn.connectionParams = make([]C.RFC_CONNECTION_PARAMETER, conn.paramCount, conn.paramCount)
 	conn.rstrip = true
 	conn.returnImportParams = false
 	conn.alive = false
-	for i := 0; i < p.NumField(); i++ {
-		conn.connectionParams[i].name, err = fillString(p.Type().Field(i).Name)
-		conn.connectionParams[i].value, err = fillString(p.Field(i).String())
+
+	runtime.SetFinalizer(conn, connectionFinalizer)
+	conn.paramCount = C.uint(len(connectionParams))
+	conn.connectionParams = connectionParams
+	conn.connParams = make([]C.RFC_CONNECTION_PARAMETER, conn.paramCount, conn.paramCount)
+	i := 0
+	for name, value := range conn.connectionParams {
+		conn.connParams[i].name, err = fillString(name)
+		conn.connParams[i].value, err = fillString(value)
+		i++
 	}
 	if err != nil {
 		return nil, err
 	}
+
 	err = conn.Open()
 	if err != nil {
 		return nil, err
 	}
+
 	return
 }
 
 // ConnectionFromDest creates a new connection with just the dest system id.
 func ConnectionFromDest(dest string) (conn *Connection, err error) {
-	return ConnectionFromParams(ConnectionParameter{Dest: dest})
+	return ConnectionFromParams(ConnectionParameters{"dest": dest})
 }
 
 // RStrip sets rstrip of the given connection to the passed parameter and returns the connection
@@ -966,8 +972,8 @@ func (conn *Connection) Close() (err error) {
 // Open opens the connection and sets alive to true.
 func (conn *Connection) Open() (err error) {
 	var errorInfo C.RFC_ERROR_INFO
-	conn.handle = C.RfcOpenConnection(&conn.connectionParams[0], conn.paramCount, &errorInfo)
-	if conn.handle == nil {
+	conn.handle = C.RfcOpenConnection(&conn.connParams[0], conn.paramCount, &errorInfo)
+	if errorInfo.code != C.RFC_OK {
 		return rfcError(errorInfo, "Connection could not be opened")
 	} else {
 		conn.alive = true
@@ -1005,15 +1011,10 @@ func (conn *Connection) Ping() (err error) {
 func (conn *Connection) GetConnectionAttributes() (connAttr ConnectionAttributes, err error) {
 	var errorInfo C.RFC_ERROR_INFO
 	var attributes C.RFC_ATTRIBUTES
-	if !conn.alive {
-		err = conn.Open()
-		if err != nil {
-			return
-		}
-	}
+
 	rc := C.RfcGetConnectionAttributes(conn.handle, &attributes, &errorInfo)
-	if rc != C.RFC_OK {
-		return connAttr, rfcError(errorInfo, "Could not get connection attributes")
+	if rc != C.RFC_OK || errorInfo.code != C.RFC_OK {
+		return nil, rfcError(errorInfo, "Could not get connection attributes")
 	}
 	return wrapConnectionAttributes(attributes, conn.rstrip)
 }
@@ -1105,6 +1106,7 @@ func (conn *Connection) Call(goFuncName string, params interface{}) (result map[
 	}
 
 	rc := C.RfcInvoke(conn.handle, funcCont, &errorInfo)
+
 	if rc != C.RFC_OK {
 		return result, rfcError(errorInfo, "Could not invoke function \"%v\"", goFuncName)
 	}
