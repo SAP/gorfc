@@ -1,3 +1,5 @@
+:heavy_exclamation_mark: Don't upgrade SAP NWRFC SDK on Darwin, see [#143](https://github.com/SAP/node-rfc/issues/143)
+
 [SAP NetWeawer RFC SDK](https://support.sap.com/en/product/connectors/nwrfcsdk.html) client bindings for GO.
 
 [![license](https://img.shields.io/badge/license-Apache-blue.svg)](https://github.com/SAP/gorfc/blob/master/LICENSE)
