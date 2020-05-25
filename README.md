@@ -34,6 +34,8 @@
 
 - Build toolchain requires GCC and [MinGW](http://mingw-w64.org). Using TDM_GCC may lead to issues: https://stackoverflow.com/questions/35004744/golang-oci8-error-adding-symbols-file-in-wrong-format
 
+- Install the latest MinGW-w64, keeping offered defaults
+
 ### macOS
 
 - Build toolchain requires GCC and Xcode Command Line Tools:
