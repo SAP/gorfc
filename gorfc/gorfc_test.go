@@ -251,7 +251,7 @@ func TestTableRowAsStructure(t *testing.T) {
 }
 
 func TestTableRowAsMap(t *testing.T) {
-	fmt.Println("STFC: Table rows as saps")
+	fmt.Println("STFC: Table rows as maps")
 	c, err := ConnectionFromParams(abapSystem())
 	assert.Nil(t, err)
 

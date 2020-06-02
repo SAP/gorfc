@@ -5,11 +5,15 @@ package gorfc
 
 /*
 
-#cgo windows CFLAGS: -DSAPonNT -D_CRT_NON_CONFORMING_SWPRINTFS -D_CRT_SECURE_NO_DEPRECATE -D_CRT_NONSTDC_NO_DEPRECATE -D_CONSOLE
-#cgo windows CFLAGS: -D_AFXDLL -DWIN32 -D_WIN32_WINNT=0x0502 -DWIN64 -D_AMD64_ -DNDEBUG -DSAPwithUNICODE -DUNICODE -D_UNICODE
+// ~~~~ windows ~~~~ //
+
+#cgo windows CFLAGS: -D_CRT_NON_CONFORMING_SWPRINTFS -D_CRT_SECURE_NO_DEPRECATE -D_CRT_NONSTDC_NO_DEPRECATE -D_CONSOLE
+#cgo windows CFLAGS: -DSAPonNT -D_AFXDLL -DWIN32 -D_WIN32_WINNT=0x0502 -DWIN64 -D_AMD64_
+#cgo windows CFLAGS: -DSAPwithUNICODE -DUNICODE -D_UNICODE
 #cgo windows CFLAGS: -DSAPwithTHREADS -D_ATL_ALLOW_CHAR_UNSIGNED -DSAP_PLATFORM_MAKENAME=ntintel
-#cgo windows CFLAGS: -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE -D__NO_MATH_INLINES
-#cgo windows CFLAGS: -O2 -g -pipe -m64 -mwindows -pthread -march=x86-64
+#cgo windows CFLAGS: -DNDEBUG -D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64 -D__NO_MATH_INLINES
+#cgo windows CFLAGS: -O2 -g -pthread -pipe -m64
+#cgo windows CFLAGS: -mwindows -march=x86-64
 #cgo windows CFLAGS: -fno-strict-aliasing -fno-omit-frame-pointer -fexceptions -funsigned-char
 #cgo windows CFLAGS: -Wall -Wno-uninitialized -Wno-long-long
 #cgo windows CFLAGS: -Wcast-align -Wunused-variable
@@ -25,16 +29,22 @@ package gorfc
 #cgo windows LDFLAGS: -OPT:REF -LTCG
 // todo -NXCOMPAT -STACK:0x2000000 -SWAPRUN:NET -DEBUG -DEBUGTYPE:CV,FIXUP -MACHINE:amd64 -nologo
 
-#cgo linux CFLAGS: -DNDEBUG -D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64 -DSAPonUNIX
-#cgo linux CFLAGS: -DSAPwithUNICODE -D__NO_MATH_INLINES -DSAPwithTHREADS -DSAPonLIN
-#cgo linux CFLAGS: -O2 -g -fno-strict-aliasing -fno-omit-frame-pointer
-#cgo linux CFLAGS: -m64 -fexceptions -funsigned-char -Wall -Wno-uninitialized -Wno-long-long
-#cgo linux CFLAGS: -Wcast-align -pthread -pipe -Wno-unused-variable
+// ~~~~ linux ~~~~ //
+
+#cgo linux CFLAGS: -DNDEBUG -D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64
+#cgo linux CFLAGS: -DSAPwithUNICODE -D__NO_MATH_INLINES -DSAPwithTHREADS
+#cgo linux CFLAGS: -DSAPonUNIX -DSAPonLIN
+#cgo linux CFLAGS: -O2 -g -pthread -pipe -m64
+#cgo linux CFLAGS: -fno-strict-aliasing -fno-omit-frame-pointer -fexceptions -funsigned-char
+#cgo linux CFLAGS: -Wall -Wno-uninitialized -Wno-long-long
+#cgo linux CFLAGS: -Wcast-align -Wno-unused-variable
 
 #cgo linux CFLAGS: -I/usr/local/sap/nwrfcsdk/include
 #cgo linux LDFLAGS: -L/usr/local/sap/nwrfcsdk/lib -lsapnwrfc -lsapucum
 
 #cgo linux LDFLAGS: -O2 -g -pthread
+
+// ~~~~ darwin ~~~~ //
 
 #cgo darwin CFLAGS: -Wall -O2 -Wno-uninitialized -Wcast-align
 #cgo darwin CFLAGS: -DSAP_UC_is_wchar -DSAPwithUNICODE -D__NO_MATH_INLINES -DSAPwithTHREADS -DSAPonLIN
@@ -182,22 +192,22 @@ func fillVariable(cType C.RFCTYPE, container C.RFC_FUNCTION_HANDLE, cName *C.SAP
 		rc = C.RfcSetXString(container, cName, bValue, cLen, &errorInfo)
 	case C.RFCTYPE_CHAR:
 		cValue, err = fillString(reflect.ValueOf(value).String())
-		//cLen := (C.uint)(len(reflect.ValueOf(value).String()))
+		//cLen := C.uint(len(reflect.ValueOf(value).String()))
 		cLen := C.uint(C.GoStrlenU((*C.SAP_UTF16)(cValue)))
 		rc = C.RfcSetChars(container, cName, (*C.RFC_CHAR)(cValue), cLen, &errorInfo)
 	case C.RFCTYPE_STRING:
 		cValue, err = fillString(reflect.ValueOf(value).String())
-		//cLen := (C.uint)(len(reflect.ValueOf(value).String()))
+		//cLen := C.uint(len(reflect.ValueOf(value).String()))
 		cLen := C.uint(C.GoStrlenU((*C.SAP_UTF16)(cValue)))
 		rc = C.RfcSetString(container, cName, cValue, cLen, &errorInfo)
 	case C.RFCTYPE_NUM:
 		cValue, err = fillString(reflect.ValueOf(value).String())
-		//cLen := (C.uint)(len(reflect.ValueOf(value).String()))
+		//cLen := C.uint(len(reflect.ValueOf(value).String()))
 		cLen := C.uint(C.GoStrlenU((*C.SAP_UTF16)(cValue)))
 		rc = C.RfcSetNum(container, cName, (*C.RFC_NUM)(cValue), cLen, &errorInfo)
 	case C.RFCTYPE_BCD:
 		cValue, err = fillString(reflect.ValueOf(value).String())
-		//cLen := (C.uint)(len(reflect.ValueOf(value).String()))
+		//cLen := C.uint(len(reflect.ValueOf(value).String()))
 		cLen := C.uint(C.GoStrlenU((*C.SAP_UTF16)(cValue)))
 		rc = C.RfcSetString(container, cName, cValue, cLen, &errorInfo)
 	case C.RFCTYPE_FLOAT:
@@ -411,6 +421,7 @@ func wrapConnectionAttributes(attributes C.RFC_ATTRIBUTES, strip bool) (connAttr
 	return
 }
 
+// Data container field description
 type FieldDescription struct {
 	Name      string
 	FieldType string
@@ -422,6 +433,7 @@ type FieldDescription struct {
 	TypeDesc  TypeDescription
 }
 
+// Data container type description
 type TypeDescription struct {
 	Name      string
 	NucLength uint
