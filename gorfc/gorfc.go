@@ -212,10 +212,10 @@ func fillVariable(cType C.RFCTYPE, container C.RFC_FUNCTION_HANDLE, cName *C.SAP
 		rc = C.RfcSetString(container, cName, cValue, cLen, &errorInfo)
 	case C.RFCTYPE_FLOAT:
 		rc = C.RfcSetFloat(container, cName, C.RFC_FLOAT(reflect.ValueOf(value).Float()), &errorInfo)
-	case C.RFCTYPE_INT, C.RFCTYPE_INT1, C.RFCTYPE_INT2:
+	case C.RFCTYPE_INT1:
+		rc = C.RfcSetInt(container, cName, C.RFC_INT(reflect.ValueOf(value).Uint()), &errorInfo)
+	case C.RFCTYPE_INT2, C.RFCTYPE_INT, C.RFCTYPE_INT8:
 		rc = C.RfcSetInt(container, cName, C.RFC_INT(reflect.ValueOf(value).Int()), &errorInfo)
-	case C.RFCTYPE_INT8:
-		rc = C.RfcSetInt8(container, cName, C.RFC_INT8(reflect.ValueOf(value).Int()), &errorInfo)
 	case C.RFCTYPE_DATE:
 		cValue, err = fillString(value.(time.Time).Format("20060102"))
 		rc = C.RfcSetDate(container, cName, (*C.RFC_CHAR)(cValue), &errorInfo)
@@ -733,25 +733,25 @@ func wrapVariable(cType C.RFCTYPE, container C.RFC_FUNCTION_HANDLE, cName *C.SAP
 		if rc != C.RFC_OK {
 			return result, rfcError(errorInfo, "Failed getting int")
 		}
-		return int(intValue), err
+		return int32(intValue), err
 	case C.RFCTYPE_INT1:
 		rc = C.RfcGetInt1(container, cName, &int1Value, &errorInfo)
 		if rc != C.RFC_OK {
 			return result, rfcError(errorInfo, "Failed getting int1")
 		}
-		return int(int1Value), err
+		return uint8(int1Value), err
 	case C.RFCTYPE_INT2:
 		rc = C.RfcGetInt2(container, cName, &int2Value, &errorInfo)
 		if rc != C.RFC_OK {
 			return result, rfcError(errorInfo, "Failed getting int2")
 		}
-		return int(int2Value), err
+		return int16(int2Value), err
 	case C.RFCTYPE_INT8:
 		rc = C.RfcGetInt8(container, cName, &int8Value, &errorInfo)
 		if rc != C.RFC_OK {
 			return result, rfcError(errorInfo, "Failed getting int8")
 		}
-		return int(int8Value), err
+		return int64(int8Value), err
 	case C.RFCTYPE_DATE:
 		dateValue = (*C.RFC_CHAR)(C.malloc(8))
 		defer C.free(unsafe.Pointer(dateValue))

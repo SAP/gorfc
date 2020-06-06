@@ -197,9 +197,9 @@ func TestTableRowAsStructure(t *testing.T) {
 		RFCCHAR1 string
 		RFCCHAR2 string
 		RFCCHAR4 string
-		RFCINT1  int
-		RFCINT2  int
-		RFCINT4  int
+		RFCINT1  uint8
+		RFCINT2  int16
+		RFCINT4  int32
 		RFCHEX3  []byte
 		RFCTIME  time.Time
 		RFCDATE  time.Time
@@ -261,9 +261,9 @@ func TestTableRowAsMap(t *testing.T) {
 			"RFCCHAR1": "A",
 			"RFCCHAR2": "BC",
 			"RFCCHAR4": "ÄBC",
-			"RFCINT1":  0xfe,
-			"RFCINT2":  0x7ffe,
-			"RFCINT4":  999999999,
+			"RFCINT1":  uint8(0xfe),
+			"RFCINT2":  int16(0x7ffe),
+			"RFCINT4":  int32(999999999),
 			"RFCHEX3":  []byte{255, 254, 253},
 			"RFCTIME":  time.Now(),
 			"RFCDATE":  time.Now(),
