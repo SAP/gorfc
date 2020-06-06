@@ -25,7 +25,7 @@ func main() {
 		fmt.Println(err)
 		return
 	}
-	fmt.Println(c.Alive())
+	fmt.Println("Connected:", c.Alive())
 
 	attrs, _ := c.GetConnectionAttributes()
 	fmt.Println("Connection attributes", attrs)
@@ -49,12 +49,15 @@ func main() {
 	r, _ := c.Call("STFC_STRUCTURE", params)
 
 	fmt.Println(r["ECHOSTRUCT"])
+
 	importStruct := params["IMPORTSTRUCT"].(map[string]interface{})
 	echoStruct := r["ECHOSTRUCT"].(map[string]interface{})
 	fmt.Println(echoStruct)
+
 	// empty time
 	fmt.Println(importStruct["RFCDATE"], reflect.TypeOf(importStruct["RFCDATE"]))
 	fmt.Println(echoStruct["RFCDATE"], reflect.TypeOf(echoStruct["RFCDATE"]))
+
 	// empty date
 	fmt.Println(importStruct["RFCTIME"], reflect.TypeOf(importStruct["RFCTIME"]))
 	fmt.Println(echoStruct["RFCTIME"], reflect.TypeOf(echoStruct["RFCTIME"]))

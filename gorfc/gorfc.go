@@ -221,7 +221,11 @@ func fillVariable(cType C.RFCTYPE, container C.RFC_FUNCTION_HANDLE, cName *C.SAP
 		cLen := C.uint(C.GoStrlenU((*C.SAP_UTF16)(cValue)))
 		rc = C.RfcSetString(container, cName, cValue, cLen, &errorInfo)
 	case C.RFCTYPE_INT1:
-		rc = C.RfcSetInt(container, cName, C.RFC_INT(reflect.ValueOf(value).Uint()), &errorInfo)
+		if reflect.TypeOf(value).String() == "int" {
+			rc = C.RfcSetInt(container, cName, C.RFC_INT(reflect.ValueOf(value).Int()), &errorInfo)
+		} else {
+			rc = C.RfcSetInt(container, cName, C.RFC_INT(reflect.ValueOf(value).Uint()), &errorInfo)
+		}
 	case C.RFCTYPE_INT2, C.RFCTYPE_INT, C.RFCTYPE_INT8:
 		rc = C.RfcSetInt(container, cName, C.RFC_INT(reflect.ValueOf(value).Int()), &errorInfo)
 	case C.RFCTYPE_DATE:
