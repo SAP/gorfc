@@ -4,11 +4,14 @@ import (
 	"fmt"
 	"os"
 	"reflect"
+	"strconv"
 
 	//"reflect"
 	"strings"
 	"testing"
 	"time"
+
+	"github.com/sap/gorfc/gorfc/testutils"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -395,4 +398,115 @@ func abapSystem() ConnectionParameters {
 		"client": "620",
 		"lang":   "EN",
 	}
+}
+
+//
+// Datatypes
+//
+
+func TestUtcLong(t *testing.T) {
+	fmt.Println("Datatypes: UTCLONG min, max, initial")
+	c, err := ConnectionFromDest("QM7")
+	assert.Nil(t, err)
+
+	utctest := testutils.RFC_MATH["UTCLONG"].(map[string]string)["MIN"]
+	r, err := c.Call("ZDATATYPES", map[string]interface{}{"IV_UTCLONG": utctest})
+	assert.Nil(t, err)
+	assert.Equal(t, utctest, reflect.ValueOf(r["EV_UTCLONG"]).String())
+
+	utctest = testutils.RFC_MATH["UTCLONG"].(map[string]string)["MAX"]
+	r, err = c.Call("ZDATATYPES", map[string]interface{}{"IV_UTCLONG": utctest})
+	assert.Nil(t, err)
+	assert.Equal(t, utctest, reflect.ValueOf(r["EV_UTCLONG"]).String())
+
+	utctest = testutils.RFC_MATH["UTCLONG"].(map[string]string)["INITIAL"]
+	r, err = c.Call("ZDATATYPES", map[string]interface{}{"IV_UTCLONG": utctest})
+	assert.Nil(t, err)
+	assert.Equal(t, utctest, reflect.ValueOf(r["EV_UTCLONG"]).String())
+
+	c.Close()
+}
+
+func TestMinMaxPositive(t *testing.T) {
+	fmt.Println("Datatypes: Positive minimum and maximum: FLOAT, DECF16, DECF34")
+	c, err := ConnectionFromDest("MME")
+	assert.Nil(t, err)
+
+	mathFloat := testutils.RFC_MATH["FLOAT"].(map[string]interface{})
+	mathDecf16 := testutils.RFC_MATH["DECF16"].(map[string]interface{})
+	mathDecf34 := testutils.RFC_MATH["DECF34"].(map[string]interface{})
+
+	is_input := map[string]string{
+		"ZFLTP_MIN":   mathFloat["POS"].(map[string]string)["MIN"],
+		"ZFLTP_MAX":   mathFloat["POS"].(map[string]string)["MAX"],
+		"ZDECF16_MIN": mathDecf16["POS"].(map[string]string)["MIN"],
+		"ZDECF16_MAX": mathDecf16["POS"].(map[string]string)["MAX"],
+		"ZDECF34_MIN": mathDecf34["POS"].(map[string]string)["MIN"],
+		"ZDECF34_MAX": mathDecf34["POS"].(map[string]string)["MAX"],
+	}
+
+	params := map[string]interface{}{
+		"IS_INPUT": is_input,
+	}
+	r, err := c.Call("/COE/RBP_FE_DATATYPES", params)
+	assert.Nil(t, err)
+	assert.NotNil(t, r)
+
+	// Float
+	f, _ := strconv.ParseFloat(is_input["ZFLTP_MIN"], 64)
+	assert.Equal(t, r["ES_OUTPUT"].(map[string]interface{})["ZFLTP_MIN"], f)
+	f, _ = strconv.ParseFloat(is_input["ZFLTP_MAX"], 64)
+	assert.Equal(t, r["ES_OUTPUT"].(map[string]interface{})["ZFLTP_MAX"], f)
+
+	// Decf16
+	assert.Equal(t, r["ES_OUTPUT"].(map[string]interface{})["ZDECF16_MIN"], is_input["ZDECF16_MIN"])
+	assert.Equal(t, r["ES_OUTPUT"].(map[string]interface{})["ZDECF16_MAX"], is_input["ZDECF16_MAX"])
+
+	// Decf34
+	assert.Equal(t, r["ES_OUTPUT"].(map[string]interface{})["ZDECF34_MIN"], is_input["ZDECF34_MIN"])
+	assert.Equal(t, r["ES_OUTPUT"].(map[string]interface{})["ZDECF34_MAX"], is_input["ZDECF34_MAX"])
+
+	c.Close()
+}
+
+func TestMinMaxNegative(t *testing.T) {
+	fmt.Println("Datatypes: Negative minimum and maximum: FLOAT, DECF16, DECF34")
+	c, err := ConnectionFromDest("MME")
+	assert.Nil(t, err)
+
+	mathFloat := testutils.RFC_MATH["FLOAT"].(map[string]interface{})
+	mathDecf16 := testutils.RFC_MATH["DECF16"].(map[string]interface{})
+	mathDecf34 := testutils.RFC_MATH["DECF34"].(map[string]interface{})
+
+	is_input := map[string]string{
+		"ZFLTP_MIN":   mathFloat["NEG"].(map[string]string)["MIN"],
+		"ZFLTP_MAX":   mathFloat["NEG"].(map[string]string)["MAX"],
+		"ZDECF16_MIN": mathDecf16["NEG"].(map[string]string)["MIN"],
+		"ZDECF16_MAX": mathDecf16["NEG"].(map[string]string)["MAX"],
+		"ZDECF34_MIN": mathDecf34["NEG"].(map[string]string)["MIN"],
+		"ZDECF34_MAX": mathDecf34["NEG"].(map[string]string)["MAX"],
+	}
+
+	params := map[string]interface{}{
+		"IS_INPUT": is_input,
+	}
+	r, err := c.Call("/COE/RBP_FE_DATATYPES", params)
+	assert.Nil(t, err)
+	assert.NotNil(t, r)
+
+	// Float
+	f, _ := strconv.ParseFloat(is_input["ZFLTP_MIN"], 64)
+	assert.Equal(t, r["ES_OUTPUT"].(map[string]interface{})["ZFLTP_MIN"], f)
+	f, _ = strconv.ParseFloat(is_input["ZFLTP_MAX"], 64)
+	assert.Equal(t, r["ES_OUTPUT"].(map[string]interface{})["ZFLTP_MAX"], f)
+
+	// Decf16
+	assert.Equal(t, r["ES_OUTPUT"].(map[string]interface{})["ZDECF16_MIN"], is_input["ZDECF16_MIN"])
+	assert.Equal(t, r["ES_OUTPUT"].(map[string]interface{})["ZDECF16_MAX"], is_input["ZDECF16_MAX"])
+
+	// Decf34
+	assert.Equal(t, r["ES_OUTPUT"].(map[string]interface{})["ZDECF34_MIN"], is_input["ZDECF34_MIN"])
+	assert.Equal(t, r["ES_OUTPUT"].(map[string]interface{})["ZDECF34_MAX"], is_input["ZDECF34_MAX"])
+
+	c.Close()
 }

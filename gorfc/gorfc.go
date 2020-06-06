@@ -205,13 +205,21 @@ func fillVariable(cType C.RFCTYPE, container C.RFC_FUNCTION_HANDLE, cName *C.SAP
 		//cLen := C.uint(len(reflect.ValueOf(value).String()))
 		cLen := C.uint(C.GoStrlenU((*C.SAP_UTF16)(cValue)))
 		rc = C.RfcSetNum(container, cName, (*C.RFC_NUM)(cValue), cLen, &errorInfo)
-	case C.RFCTYPE_BCD:
-		cValue, err = fillString(reflect.ValueOf(value).String())
-		//cLen := C.uint(len(reflect.ValueOf(value).String()))
+	//case C.RFCTYPE_BCD, C.RFCTYPE_DECF16, C.RFCTYPE_DECF34:
+	//	cValue, err = fillString(reflect.ValueOf(value).String())
+	//	//cLen := C.uint(len(reflect.ValueOf(value).String()))
+	//	cLen := C.uint(C.GoStrlenU((*C.SAP_UTF16)(cValue)))
+	//	rc = C.RfcSetString(container, cName, cValue, cLen, &errorInfo)
+	case C.RFCTYPE_FLOAT, C.RFCTYPE_BCD, C.RFCTYPE_DECF16, C.RFCTYPE_DECF34:
+		var goVal string
+		if reflect.TypeOf(value).String() == "float64" {
+			goVal = fmt.Sprintf("%g", reflect.ValueOf(value).Float())
+		} else {
+			goVal = reflect.ValueOf(value).String()
+		}
+		cValue, err = fillString(goVal)
 		cLen := C.uint(C.GoStrlenU((*C.SAP_UTF16)(cValue)))
 		rc = C.RfcSetString(container, cName, cValue, cLen, &errorInfo)
-	case C.RFCTYPE_FLOAT:
-		rc = C.RfcSetFloat(container, cName, C.RFC_FLOAT(reflect.ValueOf(value).Float()), &errorInfo)
 	case C.RFCTYPE_INT1:
 		rc = C.RfcSetInt(container, cName, C.RFC_INT(reflect.ValueOf(value).Uint()), &errorInfo)
 	case C.RFCTYPE_INT2, C.RFCTYPE_INT, C.RFCTYPE_INT8:
@@ -222,6 +230,11 @@ func fillVariable(cType C.RFCTYPE, container C.RFC_FUNCTION_HANDLE, cName *C.SAP
 	case C.RFCTYPE_TIME:
 		cValue, err = fillString(value.(time.Time).Format("150405"))
 		rc = C.RfcSetTime(container, cName, (*C.RFC_CHAR)(cValue), &errorInfo)
+	case C.RFCTYPE_UTCLONG:
+		cValue, err = fillString(reflect.ValueOf(value).String())
+		//cLen := C.uint(len(reflect.ValueOf(value).String()))
+		cLen := C.uint(C.GoStrlenU((*C.SAP_UTF16)(cValue)))
+		rc = C.RfcSetString(container, cName, cValue, cLen, &errorInfo)
 	default:
 		var goName string
 		goName, err = wrapString(cName, true)
@@ -709,18 +722,43 @@ func wrapVariable(cType C.RFCTYPE, container C.RFC_FUNCTION_HANDLE, cName *C.SAP
 		// => (2*cLen)+1
 		strLen = 2*cLen + 1
 		stringValue = C.GoMallocU(strLen + 1)
-		defer C.free(unsafe.Pointer(stringValue))
 		rc = C.RfcGetString(container, cName, stringValue, strLen+1, &resultLen, &errorInfo)
 		if rc == 23 {
 			//Buffer too small, use returned requried result length
 			C.free(unsafe.Pointer(stringValue))
 			strLen = resultLen
 			stringValue = C.GoMallocU(strLen + 1)
+
 			rc = C.RfcGetString(container, cName, stringValue, strLen+1, &resultLen, &errorInfo)
 			if rc != C.RFC_OK {
 				return result, rfcError(errorInfo, "Failed getting BCD")
 			}
 		}
+		defer C.free(unsafe.Pointer(stringValue))
+		return wrapString(stringValue, strip)
+	case C.RFCTYPE_DECF16, C.RFCTYPE_DECF34:
+		// An upper bound for the length of the _string representation_
+		// of the BCD is given by (2*cLen)-1 (each digit is encoded in 4bit,
+		// the first 4 bit are reserved for the sign)
+		// Furthermore, a sign char, a decimal separator char may be present
+		// => (2*cLen)+1
+		// and exponent char, sign and exponent
+		// => +9
+		strLen = 2*cLen + 10
+		stringValue = C.GoMallocU(strLen + 1)
+		rc = C.RfcGetString(container, cName, stringValue, strLen+1, &resultLen, &errorInfo)
+		if rc == 23 {
+			//Buffer too small, use returned requried result length
+			C.free(unsafe.Pointer(stringValue))
+			strLen = resultLen
+			stringValue = C.GoMallocU(strLen + 1)
+
+			rc = C.RfcGetString(container, cName, stringValue, strLen+1, &resultLen, &errorInfo)
+			if rc != C.RFC_OK {
+				return result, rfcError(errorInfo, "Failed getting BCD")
+			}
+		}
+		defer C.free(unsafe.Pointer(stringValue))
 		return wrapString(stringValue, strip)
 	case C.RFCTYPE_FLOAT:
 		rc = C.RfcGetFloat(container, cName, &floatValue, &errorInfo)
@@ -782,6 +820,20 @@ func wrapVariable(cType C.RFCTYPE, container C.RFC_FUNCTION_HANDLE, cName *C.SAP
 		}
 		goTime, _ := time.Parse("150405", value)
 		return goTime, err
+	case C.RFCTYPE_UTCLONG:
+		resultLen = 0
+		strLen = 27
+
+		stringValue = (*C.SAP_UC)(C.GoMallocU(strLen + 1))
+		defer C.free(unsafe.Pointer(stringValue))
+
+		rc = C.RfcGetString(container, cName, stringValue, strLen+1, &resultLen, &errorInfo)
+
+		if rc != C.RFC_OK {
+			return result, rfcError(errorInfo, "Failed getting string")
+		}
+		utc, _ := nWrapString(stringValue, strLen, strip)
+		return utc[:19] + "." + utc[20:], err
 	}
 	return result, rfcError(errorInfo, "Unknown RFC type %d when wrapping variable", cType)
 }
