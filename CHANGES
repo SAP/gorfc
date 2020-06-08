@@ -15,3 +15,11 @@ CHANGES
     - Bytes: RFCTYPE_BYTE, RFCTYPE_XSTRING
     - BCD: RFCTYPE_BCD
 - ABAP INT8 type added: RFCTYPE_INT8
+
+0.2.0 (2020-06-09)
+------------------
+- ABAP datatypes support completed, added: RFC_DECF16, RFC_DECF34, RFC_UTCLONG
+- Error handling extended with GoRfc error type
+- RFCTYPE_XSTRING wrap fix, fixed cLen replaced by variable strLen
+- ABAP input parameters check extended, covering:
+  - Passing non-array to TABLE parameter

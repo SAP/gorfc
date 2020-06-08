@@ -5,14 +5,14 @@ import (
 	"os"
 	"reflect"
 	"strconv"
-
-	//"reflect"
 	"strings"
-	"testing"
 	"time"
 
-	"github.com/sap/gorfc/gorfc/testutils"
+	//"reflect"
 
+	"testing"
+
+	"github.com/sap/gorfc/gorfc/testutils"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -508,5 +508,43 @@ func TestMinMaxNegative(t *testing.T) {
 	assert.Equal(t, r["ES_OUTPUT"].(map[string]interface{})["ZDECF34_MIN"], is_input["ZDECF34_MIN"])
 	assert.Equal(t, r["ES_OUTPUT"].(map[string]interface{})["ZDECF34_MAX"], is_input["ZDECF34_MAX"])
 
+	c.Close()
+}
+
+func TestNonArrayForArrayParam(t *testing.T) {
+	fmt.Println("Datatypes: Non-array passed to TABLE parameter")
+	c, err := ConnectionFromDest("MME")
+	assert.Nil(t, err)
+
+	params := map[string]interface{}{
+		"QUERY_TABLE": "MARA",
+		"OPTIONS":     "A string instead of an array",
+	}
+	r, err := c.Call("RFC_READ_TABLE", params)
+	assert.Nil(t, r)
+	assert.NotNil(t, err)
+	assert.Equal(t, "GO string passed to ABAP TABLE parameter, expected GO array", err.(*GoRfcError).Description)
+	c.Close()
+}
+
+func TestRAW_and_BYTE_acceptBuffer(t *testing.T) {
+	fmt.Println("Datatypes: RAW/BYTE/XSTRING accepts Buffer")
+
+	bytesIn1 := testutils.XBytes(17)
+	bytesIn2 := testutils.XBytes(2048)
+	is_input := map[string]interface{}{
+		"ZRAW":       bytesIn1,
+		"ZRAWSTRING": bytesIn2,
+	}
+	params := map[string]interface{}{
+		"IS_INPUT": is_input,
+	}
+	c, err := ConnectionFromDest("MME")
+	assert.Nil(t, err)
+
+	r, err := c.Call("/COE/RBP_FE_DATATYPES", params)
+	assert.Nil(t, err)
+	assert.Equal(t, bytesIn1, r["ES_OUTPUT"].(map[string]interface{})["ZRAW"])
+	assert.Equal(t, bytesIn2, r["ES_OUTPUT"].(map[string]interface{})["ZRAWSTRING"])
 	c.Close()
 }

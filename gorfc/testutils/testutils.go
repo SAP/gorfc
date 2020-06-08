@@ -1,5 +1,7 @@
 package testutils
 
+import "crypto/rand"
+
 var RFC_MATH = map[string]interface{}{
 
 	"RFC_INT1": map[string]uint8{
@@ -61,4 +63,10 @@ var RFC_MATH = map[string]interface{}{
 		"MAX":     "9999-12-31T23:59:59.9999999",
 		"INITIAL": "0000-00-00T00:00:00.0000000",
 	},
+}
+
+func XBytes(length uint) []byte {
+	var xbytes = make([]byte, length)
+	rand.Read(xbytes)
+	return xbytes
 }

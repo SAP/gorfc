@@ -14,9 +14,9 @@ ABAP data types supported by RFC API are mapped to GO data types:
 | 8         | RFC_INT8    | 8              | 8-byte integer                                 | int64                                 |
 | p         | RFC_UTCLONG | 8              | Timestamp with high precision - 8 bytes        | string                                |
 | f         | RFC_FLOAT   | 8              | Floating point numbers                         | float64 or string, from abap: float64 |
-| d         | RFC_DATE    | 8 or 16        | Date ("YYYYMMDD")                              | Time or string, from abap: string     |
-| t         | RFC_TIME    | 6 or 12        | Time ("HHMMSS")                                | Time or string, from abap: string     |
+| d         | RFC_DATE    | 8 or 16        | Date ("YYYYMMDD")                              | Time or string, from abap: Time       |
+| t         | RFC_TIME    | 6 or 12        | Time ("HHMMSS")                                | Time or string, from abap: Time       |
 | a         | RFC_DECF16  | 8              | Decimal floating point 8 bytes (IEEE 754r)     | float64 or string, from abap: string  |
 | e         | RFC_DECF34  | 16             | Decimal floating point 16 bytes (IEEE 754r)    | float64 or string, from abap: string  |
-| g         | RFC_CHAR\*  |                | Variable-length, zero terminated string        |                                       |
-| y         | RFC_BYTE\*  |                | Variable-length raw string, length in bytes    |                                       |
+| g         | RFC_CHAR\*  |                | Variable-length, zero terminated string        | string                                |
+| y         | RFC_BYTE\*  |                | Variable-length raw string, length in bytes    | []byte                                |

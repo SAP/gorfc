@@ -46,7 +46,12 @@ func main() {
 			"RFCDATA2": "DATA222",
 		},
 	}
-	r, _ := c.Call("STFC_STRUCTURE", params)
+	r, e := c.Call("STFC_STRUCTURE", params)
+
+	if e != nil {
+		fmt.Println(e)
+		return
+	}
 
 	fmt.Println(r["ECHOSTRUCT"])
 
