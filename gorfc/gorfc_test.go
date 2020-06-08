@@ -427,7 +427,91 @@ func TestUtcLong(t *testing.T) {
 	c.Close()
 }
 
-func TestMinMaxPositive(t *testing.T) {
+func TestIntMaxPositive(t *testing.T) {
+	fmt.Println("Datatypes: Integers max positive")
+	c, err := ConnectionFromDest("MME")
+	assert.Nil(t, err)
+
+	rfcInt1 := testutils.RFC_MATH["RFC_INT1"].(map[string]uint8)
+	rfcInt2 := testutils.RFC_MATH["RFC_INT2"].(map[string]int16)
+	rfcInt4 := testutils.RFC_MATH["RFC_INT4"].(map[string]int32)
+
+	importStruct := map[string]interface{}{
+		"RFCINT1": rfcInt1["MAX"] - 1,
+		"RFCINT2": rfcInt2["MAX"] - 1,
+		"RFCINT4": rfcInt4["MAX"] - 1,
+	}
+
+	params := map[string]interface{}{
+		"IMPORTSTRUCT": importStruct,
+		"RFCTABLE":     []interface{}{importStruct},
+	}
+	r, err := c.Call("STFC_STRUCTURE", params)
+	assert.Nil(t, err)
+	assert.NotNil(t, r)
+
+	echoStruct := r["ECHOSTRUCT"].(map[string]interface{})
+	rfcTable_0 := r["RFCTABLE"].([]interface{})[0].(map[string]interface{})
+	rfcTable_1 := r["RFCTABLE"].([]interface{})[1].(map[string]interface{})
+
+	assert.Equal(t, importStruct["RFCINT1"], echoStruct["RFCINT1"])
+	assert.Equal(t, importStruct["RFCINT1"], rfcTable_0["RFCINT1"])
+	assert.Equal(t, reflect.ValueOf(importStruct["RFCINT1"]).Uint()+1, reflect.ValueOf(rfcTable_1["RFCINT1"]).Uint())
+
+	assert.Equal(t, importStruct["RFCINT2"], echoStruct["RFCINT2"])
+	assert.Equal(t, importStruct["RFCINT2"], rfcTable_0["RFCINT2"])
+	assert.Equal(t, reflect.ValueOf(importStruct["RFCINT2"]).Int()+1, reflect.ValueOf(rfcTable_1["RFCINT2"]).Int())
+
+	assert.Equal(t, importStruct["RFCINT4"], echoStruct["RFCINT4"])
+	assert.Equal(t, importStruct["RFCINT4"], rfcTable_0["RFCINT4"])
+	assert.Equal(t, reflect.ValueOf(importStruct["RFCINT4"]).Int()+1, reflect.ValueOf(rfcTable_1["RFCINT4"]).Int())
+
+	c.Close()
+}
+
+func TestIntMaxNegative(t *testing.T) {
+	fmt.Println("Datatypes: Integers max negative")
+	c, err := ConnectionFromDest("MME")
+	assert.Nil(t, err)
+
+	rfcInt1 := testutils.RFC_MATH["RFC_INT1"].(map[string]uint8)
+	rfcInt2 := testutils.RFC_MATH["RFC_INT2"].(map[string]int16)
+	rfcInt4 := testutils.RFC_MATH["RFC_INT4"].(map[string]int32)
+
+	importStruct := map[string]interface{}{
+		"RFCINT1": rfcInt1["MIN"],
+		"RFCINT2": rfcInt2["MIN"],
+		"RFCINT4": rfcInt4["MIN"],
+	}
+
+	params := map[string]interface{}{
+		"IMPORTSTRUCT": importStruct,
+		"RFCTABLE":     []interface{}{importStruct},
+	}
+	r, err := c.Call("STFC_STRUCTURE", params)
+	assert.Nil(t, err)
+	assert.NotNil(t, r)
+
+	echoStruct := r["ECHOSTRUCT"].(map[string]interface{})
+	rfcTable_0 := r["RFCTABLE"].([]interface{})[0].(map[string]interface{})
+	rfcTable_1 := r["RFCTABLE"].([]interface{})[1].(map[string]interface{})
+
+	assert.Equal(t, importStruct["RFCINT1"], echoStruct["RFCINT1"])
+	assert.Equal(t, importStruct["RFCINT1"], rfcTable_0["RFCINT1"])
+	assert.Equal(t, reflect.ValueOf(importStruct["RFCINT1"]).Uint()+1, reflect.ValueOf(rfcTable_1["RFCINT1"]).Uint())
+
+	assert.Equal(t, importStruct["RFCINT2"], echoStruct["RFCINT2"])
+	assert.Equal(t, importStruct["RFCINT2"], rfcTable_0["RFCINT2"])
+	assert.Equal(t, reflect.ValueOf(importStruct["RFCINT2"]).Int()+1, reflect.ValueOf(rfcTable_1["RFCINT2"]).Int())
+
+	assert.Equal(t, importStruct["RFCINT4"], echoStruct["RFCINT4"])
+	assert.Equal(t, importStruct["RFCINT4"], rfcTable_0["RFCINT4"])
+	assert.Equal(t, reflect.ValueOf(importStruct["RFCINT4"]).Int()+1, reflect.ValueOf(rfcTable_1["RFCINT4"]).Int())
+
+	c.Close()
+}
+
+func TestFloatMinMaxPositive(t *testing.T) {
 	fmt.Println("Datatypes: Positive minimum and maximum: FLOAT, DECF16, DECF34")
 	c, err := ConnectionFromDest("MME")
 	assert.Nil(t, err)
@@ -469,7 +553,7 @@ func TestMinMaxPositive(t *testing.T) {
 	c.Close()
 }
 
-func TestMinMaxNegative(t *testing.T) {
+func TestFloatMinMaxNegative(t *testing.T) {
 	fmt.Println("Datatypes: Negative minimum and maximum: FLOAT, DECF16, DECF34")
 	c, err := ConnectionFromDest("MME")
 	assert.Nil(t, err)
@@ -511,22 +595,6 @@ func TestMinMaxNegative(t *testing.T) {
 	c.Close()
 }
 
-func TestNonArrayForArrayParam(t *testing.T) {
-	fmt.Println("Datatypes: Non-array passed to TABLE parameter")
-	c, err := ConnectionFromDest("MME")
-	assert.Nil(t, err)
-
-	params := map[string]interface{}{
-		"QUERY_TABLE": "MARA",
-		"OPTIONS":     "A string instead of an array",
-	}
-	r, err := c.Call("RFC_READ_TABLE", params)
-	assert.Nil(t, r)
-	assert.NotNil(t, err)
-	assert.Equal(t, "GO string passed to ABAP TABLE parameter, expected GO array", err.(*GoRfcError).Description)
-	c.Close()
-}
-
 func TestRAW_and_BYTE_acceptBuffer(t *testing.T) {
 	fmt.Println("Datatypes: RAW/BYTE/XSTRING accepts Buffer")
 
@@ -546,5 +614,21 @@ func TestRAW_and_BYTE_acceptBuffer(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, bytesIn1, r["ES_OUTPUT"].(map[string]interface{})["ZRAW"])
 	assert.Equal(t, bytesIn2, r["ES_OUTPUT"].(map[string]interface{})["ZRAWSTRING"])
+	c.Close()
+}
+
+func TestNonArrayForArrayParam(t *testing.T) {
+	fmt.Println("Datatypes: Non-array passed to TABLE parameter")
+	c, err := ConnectionFromDest("MME")
+	assert.Nil(t, err)
+
+	params := map[string]interface{}{
+		"QUERY_TABLE": "MARA",
+		"OPTIONS":     "A string instead of an array",
+	}
+	r, err := c.Call("RFC_READ_TABLE", params)
+	assert.Nil(t, r)
+	assert.NotNil(t, err)
+	assert.Equal(t, "GO string passed to ABAP TABLE parameter, expected GO array", err.(*GoRfcError).Description)
 	c.Close()
 }
