@@ -161,7 +161,7 @@ func TestMissingAshostConnect(t *testing.T) {
 }
 
 func TestWrongParameter(t *testing.T) {
-	fmt.Println("Connection Error: Invoke with wrong parameter")
+	fmt.Println("Connection Error: Call() with non-existing parameter")
 	type importStruct struct {
 		XXX string
 	}
@@ -173,6 +173,17 @@ func TestWrongParameter(t *testing.T) {
 	assert.Equal(t, "RFC_INVALID_PARAMETER", err.(*RfcError).ErrorInfo.Key)
 	assert.Equal(t, "field 'XXX' not found", err.(*RfcError).ErrorInfo.Message)
 	c.Close()
+}
+
+func TestCallOverClosedConnection(t *testing.T) {
+	fmt.Println("Connection Error: Call() over closed connection")
+	c, err := ConnectionFromDest("MME")
+	assert.Nil(t, err)
+	c.Close()
+	assert.False(t, c.Alive())
+	r, err := c.Call("STFC_CONNECTION", map[string]interface{}{"REQUTEXT": "HELLÖ SÄP"})
+	assert.Nil(t, r)
+	assert.Equal(t, "Call() method requires an open connection", err.(*GoRfcError).Description)
 }
 
 //

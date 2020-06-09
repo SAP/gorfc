@@ -124,7 +124,10 @@ type GoRfcError struct {
 }
 
 func (err GoRfcError) Error() string {
-	return fmt.Sprintf("GORFC error: %s | %s", err.Description, err.GoError.Error())
+	if err.GoError != nil {
+		return fmt.Sprintf("GORFC error: %s | %s", err.Description, err.GoError.Error())
+	}
+	return fmt.Sprintf("GORFC error: %s", err.Description)
 }
 
 func goRfcError(description string, goerror error) *GoRfcError {
@@ -1047,11 +1050,10 @@ func (conn *Connection) Alive() bool {
 func (conn *Connection) Close() (err error) {
 	var errorInfo C.RFC_ERROR_INFO
 	if conn.alive {
+		conn.alive = false
 		rc := C.RfcCloseConnection(conn.handle, &errorInfo)
 		if rc != C.RFC_OK {
 			return rfcError(errorInfo, "Connection could not be closed")
-		} else {
-			conn.alive = false
 		}
 	}
 	return
@@ -1063,9 +1065,8 @@ func (conn *Connection) Open() (err error) {
 	conn.handle = C.RfcOpenConnection(&conn.connParams[0], conn.paramCount, &errorInfo)
 	if errorInfo.code != C.RFC_OK {
 		return rfcError(errorInfo, "Connection could not be opened")
-	} else {
-		conn.alive = true
 	}
+	conn.alive = true
 	return
 }
 
@@ -1134,6 +1135,10 @@ func (conn *Connection) GetFunctionDescription(goFuncName string) (goFuncDesc Fu
 
 // Call calls the given function with the given parameters and wraps the results returned.
 func (conn *Connection) Call(goFuncName string, params interface{}) (result map[string]interface{}, err error) {
+	if !conn.alive {
+		return nil, goRfcError("Call() method requires an open connection", nil)
+	}
+
 	var errorInfo C.RFC_ERROR_INFO
 
 	funcName, err := fillString(goFuncName)

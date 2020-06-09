@@ -23,3 +23,5 @@ CHANGES
 - RFCTYPE_XSTRING wrap fix, fixed cLen replaced by variable strLen
 - ABAP input parameters check extended, covering:
   - Passing non-array to TABLE parameter
+  - Datatypes unit tests
+- Raise an error if RFM call requested over closed connection
