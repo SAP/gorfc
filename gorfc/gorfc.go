@@ -117,7 +117,7 @@ func rfcError(errorInfo C.RFC_ERROR_INFO, format string, a ...interface{}) *RfcE
 	return &RfcError{fmt.Sprintf(format, a...), wrapError(&errorInfo)}
 }
 
-// gorfc error
+// GoRfcError is returned by gorfc
 type GoRfcError struct {
 	Description string
 	GoError     error
@@ -361,7 +361,7 @@ func nWrapString(sapuc *C.SAP_UC, sapucLength C.uint, strip bool) (string, error
 	}
 	result := C.GoString((*C.char)(unsafe.Pointer(utf8Str)))
 	if strip {
-		result = strings.Trim(result, "\x00 ")
+		result = strings.TrimRight(result, "\x00 ")
 	}
 	return result, nil
 }
@@ -458,7 +458,7 @@ func wrapConnectionAttributes(attributes C.RFC_ATTRIBUTES, strip bool) (connAttr
 	return
 }
 
-// Data container field description
+// FieldDescription type
 type FieldDescription struct {
 	Name      string
 	FieldType string
@@ -470,7 +470,7 @@ type FieldDescription struct {
 	TypeDesc  TypeDescription
 }
 
-// Data container type description
+// TypeDescription type
 type TypeDescription struct {
 	Name      string
 	NucLength uint
@@ -548,6 +548,7 @@ func wrapTypeDescription(typeDesc C.RFC_TYPE_DESC_HANDLE) (goTypeDesc TypeDescri
 	return
 }
 
+// ParameterDescription type
 type ParameterDescription struct {
 	Name          string
 	ParameterType string
@@ -567,6 +568,7 @@ func (paramDesc ParameterDescription) String() string {
 		paramDesc.Name, paramDesc.ParameterType, paramDesc.Direction, paramDesc.NucLength, paramDesc.UcLength, paramDesc.Decimals, paramDesc.DefaultValue, paramDesc.ParameterText, paramDesc.Optional, paramDesc.TypeDesc)
 }
 
+// FunctionDescription type
 type FunctionDescription struct {
 	Name       string
 	Parameters []ParameterDescription
@@ -968,8 +970,10 @@ func GetNWRFCLibVersion() (major, minor, patchlevel uint) {
 //# CONNECTION                                                                   #
 //################################################################################
 
+// Connection Parameters
 type ConnectionParameters map[string]string
 
+// Client Connection
 type Connection struct {
 	handle             C.RFC_CONNECTION_HANDLE
 	rstrip             bool
