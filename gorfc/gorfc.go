@@ -47,7 +47,7 @@ package gorfc
 // ~~~~ darwin ~~~~ //
 
 #cgo darwin CFLAGS: -Wall -O2 -Wno-uninitialized -Wcast-align
-#cgo darwin CFLAGS: -DSAP_UC_is_wchar -DSAPwithUNICODE -D__NO_MATH_INLINES -DSAPwithTHREADS -DSAPonLIN
+#cgo darwin CFLAGS: -DSAP_UC_is_wchar -DSAPwithUNICODE -D__NO_MATH_INLINES -DSAPwithTHREADS -DSAPonDARW
 #cgo darwin CFLAGS: -fexceptions -funsigned-char -fno-strict-aliasing -fPIC -pthread -std=c17 -mmacosx-version-min=10.15
 #cgo darwin CFLAGS: -fno-omit-frame-pointer
 
