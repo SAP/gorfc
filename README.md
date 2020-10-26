@@ -15,7 +15,7 @@
 
 - macOS, Linux
 
-- Windows is not supported until the #21 fixed
+- Windows is not supported until the [#21](https://github.com/SAP/gorfc/issues/21#issuecomment-716469783) fixed
 
 ## Prerequisites
 
