@@ -13,7 +13,9 @@
 
 ## Supported Platforms
 
-- Windows 10, macOS, Linux
+- macOS, Linux
+
+- Windows is not supported until the #21 fixed
 
 ## Prerequisites
 
