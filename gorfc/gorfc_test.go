@@ -637,9 +637,7 @@ func TestNonArrayForArrayParam(t *testing.T) {
 		"QUERY_TABLE": "MARA",
 		"OPTIONS":     "A string instead of an array",
 	}
-	r, err := c.Call("RFC_READ_TABLE", params)
-	assert.Nil(t, r)
-	assert.NotNil(t, err)
+	_, err = c.Call("RFC_READ_TABLE", params)
 	assert.Equal(t, "GO string passed to ABAP TABLE parameter, expected GO array", err.(*GoRfcError).Description)
 	c.Close()
 }

@@ -339,7 +339,8 @@ func fillTable(typeDesc C.RFC_TYPE_DESC_HANDLE, container C.RFC_TABLE_HANDLE, li
 //# Wrapper functions take C values and return Go values
 
 func wrapString(sapuc *C.SAP_UC, strip bool) (string, error) {
-	return nWrapString(sapuc, C.uint(C.strlenU((*C.ushort)(sapuc))), strip)
+	//return nWrapString(sapuc, C.uint(C.strlenU((*C.ushort)(sapuc))), strip)
+	return nWrapString(sapuc, C.uint(C.GoStrlenU((*C.SAP_UTF16)(sapuc))), strip)
 }
 
 func nWrapString(sapuc *C.SAP_UC, sapucLength C.uint, strip bool) (string, error) {
@@ -351,7 +352,7 @@ func nWrapString(sapuc *C.SAP_UC, sapucLength C.uint, strip bool) (string, error
 		return "", nil
 	}
 
-	utf8size := C.uint(3*sapucLength + 1)
+	utf8size := C.uint(5*sapucLength + 1)
 	utf8Str := (*C.RFC_BYTE)(C.malloc((C.size_t)(utf8size)))
 	defer C.free(unsafe.Pointer(utf8Str))
 
@@ -359,7 +360,8 @@ func nWrapString(sapuc *C.SAP_UC, sapucLength C.uint, strip bool) (string, error
 	if rc != C.RFC_OK {
 		return "", fmt.Errorf("wrapString sapucLength %v utf8size %v", sapucLength, utf8size)
 	}
-	result := C.GoString((*C.char)(unsafe.Pointer(utf8Str)))
+	//result := C.GoString((*C.char)(unsafe.Pointer(utf8Str)))
+	result := C.GoStringN((*C.char)(unsafe.Pointer(utf8Str)), C.int(resultLength))
 	if strip {
 		result = strings.TrimRight(result, "\x00 ")
 	}
