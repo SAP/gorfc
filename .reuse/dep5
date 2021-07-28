@@ -1,0 +1,8 @@
+Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+Upstream-Name: gorfc
+Upstream-Contact: Arno Uhlig <arno.uhlig@sap.com>, Fabian Ruff <fabian.ruff@sap.com> 
+Source: https://github.com/SAP/gorfc
+
+Files: *
+Copyright: 2016-21 SAP SE or an SAP affiliate company and gorfc contributors
+License: Apache-2.0
