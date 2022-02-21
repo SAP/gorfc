@@ -6,14 +6,12 @@ import (
 	"reflect"
 	"strconv"
 	"strings"
+	"testing"
 	"time"
 
-	//"reflect"
-
-	"testing"
+	"github.com/stretchr/testify/assert"
 
 	"github.com/sap/gorfc/gorfc/testutils"
-	"github.com/stretchr/testify/assert"
 )
 
 //
