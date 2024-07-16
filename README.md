@@ -7,6 +7,10 @@ For more details on the SAP NetWeaver Remote Function Call (RFC) Software Develo
 [![Go Report Card](https://goreportcard.com/badge/github.com/SAP/gorfc)](https://goreportcard.com/report/github.com/SAP/gorfc)
 [![GoDoc](https://img.shields.io/badge/godoc-reference-blue.svg?style=flat)](https://godoc.org/github.com/SAP/gorfc/gorfc)
 
+## Call for Maintainers
+
+This project is currently looking for new maintainers. Please see [this issue](https://github.com/SAP/gorfc/issues/42) for details.
+
 ## Features
 
 - Stateless and stateful connections (multiple function calls in the same ABAP session / same context)
