@@ -1211,9 +1211,7 @@ func (conn *Connection) rfcInvoke(goFuncName string, params interface{}) (result
 		return
 	}
 
-	start := time.Now()
 	rc := C.RfcInvoke(conn.handle, funcCont, &errorInfo)
-	fmt.Printf("took: %s\n", time.Since(start))
 	if rc != C.RFC_OK {
 		return result, rfcError(errorInfo, "Could not invoke function \"%v\"", goFuncName)
 	}
