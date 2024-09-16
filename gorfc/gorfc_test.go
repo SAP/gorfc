@@ -1,7 +1,9 @@
 package gorfc
 
 import (
+	"context"
 	"fmt"
+	"github.com/stretchr/testify/require"
 	"os"
 	"reflect"
 	"strconv"
@@ -14,9 +16,7 @@ import (
 	"github.com/sap/gorfc/gorfc/testutils"
 )
 
-//
 // NW RFC Lib Version
-//
 func TestNWRFCLibVersion(t *testing.T) {
 	major, minor, patchlevel := GetNWRFCLibVersion()
 	assert.Equal(t, uint(7500), major) // adapt to your NW RFC Lib version
@@ -24,9 +24,7 @@ func TestNWRFCLibVersion(t *testing.T) {
 	assert.Greater(t, patchlevel, uint(4))
 }
 
-//
 // Connection Tests
-//
 func TestConnect(t *testing.T) {
 	fmt.Println("Connection test: Open and Close")
 	c, err := ConnectionFromParams(abapSystem())
@@ -36,7 +34,7 @@ func TestConnect(t *testing.T) {
 	assert.NotNil(t, c)
 	assert.Nil(t, err)
 	assert.True(t, c.Alive())
-	c.Close()
+	assert.NoError(t, c.Close())
 	assert.False(t, c.Alive())
 }
 
@@ -359,6 +357,22 @@ func TestConfigParameter(t *testing.T) {
 	r, _ = c.Call("STFC_CONNECTION", map[string]interface{}{"REQUTEXT": "HELLÖ SÄP"})
 	assert.Equal(t, "HELLÖ SÄP", r["REQUTEXT"])
 	c.Close()
+}
+
+func TestCancelCall(t *testing.T) {
+	c, err := ConnectionFromParams(abapSystem())
+	require.Nil(t, err)
+
+	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+	defer cancel()
+	_, err = c.CallContext(ctx, "RFC_PING_AND_WAIT", map[string]interface{}{
+		"SECONDS": 4,
+	})
+	assert.ErrorIs(t, err, context.DeadlineExceeded)
+
+	_, err = c.Call("RFC_PING", map[string]interface{}{})
+	assert.NoError(t, err)
+	assert.NoError(t, c.Close())
 }
 
 func TestInvalidParameterFunctionCall(t *testing.T) {
