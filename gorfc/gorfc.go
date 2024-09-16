@@ -1243,11 +1243,11 @@ func (conn *Connection) CallContext(ctx context.Context, goFuncName string, para
 		return conn.rfcInvoke(goFuncName, params)
 	}
 
-	done := make(chan interface{})
+	done := make(chan struct{})
 	go func() {
 		defer close(done)
 		result, err = conn.rfcInvoke(goFuncName, params)
-		done <- true
+		done <- struct{}{}
 	}()
 
 	select {
