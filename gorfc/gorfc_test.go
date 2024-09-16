@@ -368,7 +368,7 @@ func TestCancelCall(t *testing.T) {
 	_, err = c.CallContext(ctx, "RFC_PING_AND_WAIT", map[string]interface{}{
 		"SECONDS": 4,
 	})
-	assert.NoError(t, err)
+	assert.ErrorIs(t, err, context.DeadlineExceeded)
 
 	_, err = c.Call("RFC_PING", map[string]interface{}{})
 	assert.NoError(t, err)
