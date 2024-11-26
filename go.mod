@@ -1,4 +1,4 @@
-module github.com/sap/gorfc
+module github.com/norscom/gorfc
 
 go 1.17
 
