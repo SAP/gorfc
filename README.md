@@ -1,3 +1,11 @@
+## Deprecation Notice
+
+This public repository is no longer maintained. Please see [this issue](https://github.com/SAP/gorfc/issues/42) for details.
+
+![](https://img.shields.io/badge/STATUS-NOT%20CURRENTLY%20MAINTAINED-red.svg?longCache=true&style=flat)
+
+---
+
 # SAP NetWeawer RFC SDK client bindings for GO
 
 For more details on the SAP NetWeaver Remote Function Call (RFC) Software Development Kit (SDK) please [see its support page](https://support.sap.com/en/product/connectors/nwrfcsdk.html).
@@ -6,10 +14,6 @@ For more details on the SAP NetWeaver Remote Function Call (RFC) Software Develo
 [![REUSE status](https://api.reuse.software/badge/github.com/SAP/gorfc)](https://api.reuse.software/badge/github.com/SAP/gorfc)
 [![Go Report Card](https://goreportcard.com/badge/github.com/SAP/gorfc)](https://goreportcard.com/report/github.com/SAP/gorfc)
 [![GoDoc](https://img.shields.io/badge/godoc-reference-blue.svg?style=flat)](https://godoc.org/github.com/SAP/gorfc/gorfc)
-
-## Call for Maintainers
-
-This project is currently looking for new maintainers. Please see [this issue](https://github.com/SAP/gorfc/issues/42) for details.
 
 ## Features
 
